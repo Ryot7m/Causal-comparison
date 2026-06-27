@@ -41,7 +41,7 @@
 さらに、平均的な効果だけでなく、推薦意向の分布全体の変化を分析することで、利用者層ごとの反応の違いも可視化しました。
 
 ```mermaid
-flowchart TD
+flowchart TB
 A[Survey Data]
 B[Feature Engineering]
 C[Expectation-based Segmentation]
@@ -51,5 +51,5 @@ F[Ordinal Outcome Model]
 G[AIPW Estimation]
 H[DR-CDF Analysis]
 I[Visualization]
- A-->B-->C-->D-->E-->F-->G-->H-->I
+ A --> B --> C --> D --> E --> F --> G --> H -->I
 ```
