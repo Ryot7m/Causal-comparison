@@ -40,34 +40,16 @@
 
 さらに、平均的な効果だけでなく、推薦意向の分布全体の変化を分析することで、利用者層ごとの反応の違いも可視化しました。
 
-Survey Data --> Feature Engineering
-
-        │
-        ▼
-Expectation-based Segmentation
-
-        │
-        ▼
-Propensity Score Estimation
-(Cross-fitting)
-
-        │
-        ▼
-Balance Diagnostics
-(SMD / ESS / Overlap)
-
-        │
-        ▼
-Ordinal Outcome Model
-
-        │
-        ▼
-AIPW Estimation
-
-        │
-        ▼
-DR-CDF Analysis
-
-        │
-        ▼
-Visualization
+```mermaid
+flowchart TD
+A[Survey Data]
+B[Feature Engineering]
+C[Expectation-based Segmentation]
+D[Propensity Score Estimation(Cross-fitting)]
+E[Balance Diagnostics(SMD / ESS / Overlap)]
+F[Ordinal Outcome Model]
+G[AIPW Estimation]
+H[DR-CDF Analysis]
+I[Visualization]
+ A-->B-->C-->D-->E-->F-->G-->H-->I
+```
