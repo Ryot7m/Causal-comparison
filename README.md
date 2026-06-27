@@ -40,11 +40,7 @@
 
 さらに、平均的な効果だけでなく、推薦意向の分布全体の変化を分析することで、利用者層ごとの反応の違いも可視化しました。
 
-Survey Data
-
-        │
-        ▼
-Feature Engineering
+Survey Data --> Feature Engineering
 
         │
         ▼
