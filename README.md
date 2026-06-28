@@ -73,8 +73,8 @@ High
 ##### 設計診断指標
 
 SMD
-ESS
-Overlap
+,ESS
+,Overlap
 
 を用いて因果推定しやすい境界を探索。
 
@@ -91,8 +91,8 @@ rank_cuts_design_optimal()
 
 ### 実装内容
 Logistic Regression
-Cross-fitting
-Probability Calibration
+,Cross-fitting
+,Probability Calibration
 
 ### 工夫点
 Out-of-fold predictionを用いて推定バイアスを抑制。
@@ -107,8 +107,8 @@ Step3 Balance Diagnostics
 ### 評価指標
 
 SMD
-ESS
-Overlap
+,ESS
+,Overlap
 ### 実装した関数
 weighted_smd()
 weighted_smd_detail()
@@ -132,8 +132,8 @@ fit_cf_oc()
 
 ### 特徴
 Double Robust
-Cross-fitting
-Influence Function
+,Cross-fitting
+,Influence Function
 ### 実装した関数
 oc_aipw_ate()
 # Step6 DR-CDF
@@ -160,8 +160,8 @@ oc_dr_cdf_by_seg()
 # Step7 可視化
 
 ATE
-DR-CDF
-Influence Function
-SMD
+,DR-CDF
+,Influence Function
+,SMD
 
 を可視化。
