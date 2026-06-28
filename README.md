@@ -1,3 +1,34 @@
+# Ordinal Causal Segmentation
+
+因果推論と順序データ解析を組み合わせ、
+利用者セグメントごとの施策効果を推定する分析パイプラインです。
+
+## このプロジェクトで実装したこと
+
+- Propensity Score
+- Cross-fitting
+- AIPW
+- DR-CDF
+- Ordinal Classification
+- Segment Optimization
+Pythonで一連の分析パイプラインを実装しました。
+
+## 使用技術
+
+Python
+
+pandas
+
+NumPy
+
+scikit-learn
+
+statsmodels
+
+matplotlib
+
+scipy
+
 # 背景
 企業では、マーケティング施策やサービス改善の意思決定のために、アンケートや顧客満足度データが広く活用されています。特に、満足度や推薦意向のような 5段階評価（順序カテゴリデータ） は、サービス品質を評価する重要な指標です。
 
