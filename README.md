@@ -11,6 +11,7 @@
 - DR-CDF
 - Ordinal Classification
 - Segment Optimization
+
 Pythonで一連の分析パイプラインを実装しました。
 
 ## 使用技術
