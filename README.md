@@ -24,11 +24,7 @@ NumPy
 
 scikit-learn
 
-statsmodels
-
 matplotlib
-
-scipy
 
 # 背景
 企業では、マーケティング施策やサービス改善の意思決定のために、アンケートや顧客満足度データが広く活用されています。特に、満足度や推薦意向のような 5段階評価（順序カテゴリデータ） は、サービス品質を評価する重要な指標です。
@@ -198,3 +194,7 @@ ATE
 ,SMD
 
 を可視化。
+
+#結果
+![](<img width="703" height="456" alt="image" src="https://github.com/user-attachments/assets/20fd7c42-941e-467b-8593-bf676dc8d717" />
+)
