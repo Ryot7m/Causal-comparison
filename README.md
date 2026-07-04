@@ -196,4 +196,4 @@ ATE
 を可視化。
 
 # 結果
-![ATE](<img width="703" height="456" alt="image" src="https://github.com/user-attachments/assets/20fd7c42-941e-467b-8593-bf676dc8d717" />)
+![ATE](https://github.com/Ryot7m/Causal-comparison/issues/2#issue-4809836117)
