@@ -205,4 +205,4 @@ ATE
 | 1 | 270 | 642 | 0.153 | 0.000 | 0.995 |
 | 2 | 124 | 31 | 0.358 | 0.000 | 0.994 |
 
-![ATE](<img width="703" height="456" alt="Image" src="https://github.com/user-attachments/assets/8ba8b228-effa-428a-be37-d9757949d605" />)
+![ATE](https://github.com/Ryot7m/Causal-comparison/issues/2#issue-4809836117)
