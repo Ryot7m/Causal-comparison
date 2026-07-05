@@ -198,11 +198,32 @@ ATE
 # 結果
 ### セグメント評価
 
-###### 正確性
+##### 正確性
 | Segment | Treated ($n_1$) | Control ($n_0$) | Max SMD ↓ | Extreme PS Rate ↓ | ESS Ratio ↑ |
 |:-------:|----------------:|----------------:|----------:|------------------:|------------:|
-| 0 | 14 | 244 | 0.586 | 0.000 | 0.993 |
-| 1 | 270 | 642 | 0.153 | 0.000 | 0.995 |
-| 2 | 124 | 31 | 0.358 | 0.000 | 0.994 |
+| 0 | 39 | 502 | 0.276 | 0.218 | 0.683 |
+| 1 | 84 | 257 | 0.377 | 0.012 | 0.228 |
+| 2 | 285 | 158 | 0.086 | 0.002 | 0.744 |
+
+##### 更新頻度
+| Segment | Treated ($n_1$) | Control ($n_0$) | Max SMD ↓ | Extreme PS Rate ↓ | ESS Ratio ↑ |
+|:-------:|----------------:|----------------:|----------:|------------------:|------------:|
+| 0 | 51 | 490 | 0.129 | 0.100 | 0.784 |
+| 1 | 101 | 240 | 0.065 | 0.000 | 0.937 |
+| 2 | 307 | 136 | 0.110 | 0.002 | 0.870 |
+
+##### 豊富さ
+| Segment | Treated ($n_1$) | Control ($n_0$) | Max SMD ↓ | Extreme PS Rate ↓ | ESS Ratio ↑ |
+|:-------:|----------------:|----------------:|----------:|------------------:|------------:|
+| 0 | 62 | 479 | 0.148 | 0.067 | 0.693 |
+| 1 | 134 | 207 | 0.053 | 0.000 | 0.923 |
+| 2 | 349 | 94 | 0.129 | 0.000 | 0.954 |
+
+##### 詳細さ
+| Segment | Treated ($n_1$) | Control ($n_0$) | Max SMD ↓ | Extreme PS Rate ↓ | ESS Ratio ↑ |
+|:-------:|----------------:|----------------:|----------:|------------------:|------------:|
+| 0 | 56 | 485 | 0.131 | 0.081 | 0.800 |
+| 1 | 108 | 233 | 0.072 | 0.000 | 0.948 |
+| 2 | 332 | 111 | 0.097 | 0.007 | 0.902 |
 
 ![ATE](https://private-user-images.githubusercontent.com/107174339/617125856-8ba8b228-effa-428a-be37-d9757949d605.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3ODMyNDExMzcsIm5iZiI6MTc4MzI0MDgzNywicGF0aCI6Ii8xMDcxNzQzMzkvNjE3MTI1ODU2LThiYThiMjI4LWVmZmEtNDI4YS1iZTM3LWQ5NzU3OTQ5ZDYwNS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwNzA1JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDcwNVQwODQwMzdaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01MWY5MmM2MWZjZjIxMjBmZDQ1ZDg5NDZkY2U4ODgzODQ0ZDY5OTQ0NzBiMjk1MjM1ZDQwNDczYjI1OTJjMThjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZwbmcifQ.AxK5T_0_c2zqghaL3WGPV5FORoTDfB4qlzRYzeUKmOE)
