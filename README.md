@@ -227,14 +227,37 @@ ATE
 | 2 | 332 | 111 | 0.097 | 0.007 | 0.902 |
 
 ### ATE
+ATEを用いて、各情報品質項目が推薦意向に与える平均的な因果効果を推定しました。
+
+分析の結果、すべての情報品質項目において満足度の向上は推薦意向を高める効果が確認されました。
+
+特に以下の傾向が見られました。
+
+**豊富さ**は全セグメントで最も大きな効果を示した
+低期待層 と 高期待層 セグメントでは効果が大きい
+中期待層 セグメントでは効果が比較的小さい
+
+これは、利用者の期待度によって情報品質改善の効果が異なる可能性を示しています。
+
 ![ATE](https://private-user-images.githubusercontent.com/107174339/617125856-8ba8b228-effa-428a-be37-d9757949d605.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3ODMyNDExMzcsIm5iZiI6MTc4MzI0MDgzNywicGF0aCI6Ii8xMDcxNzQzMzkvNjE3MTI1ODU2LThiYThiMjI4LWVmZmEtNDI4YS1iZTM3LWQ5NzU3OTQ5ZDYwNS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwNzA1JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDcwNVQwODQwMzdaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01MWY5MmM2MWZjZjIxMjBmZDQ1ZDg5NDZkY2U4ODgzODQ0ZDY5OTQ0NzBiMjk1MjM1ZDQwNDczYjI1OTJjMThjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZwbmcifQ.AxK5T_0_c2zqghaL3WGPV5FORoTDfB4qlzRYzeUKmOE)
 
 ### DR-CDF
+
+平均値だけでは把握できない変化を確認するため、DR-CDFを用いて推薦意向の分布全体を比較しました。
+分析結果から次の特徴が確認されました。
 
 ![DR-CDF正確性](https://github.com/Ryot7m/Causal-comparison/blob/main/%E6%AD%A3%E7%A2%BA%E6%80%A7.png)
 
 ![DR-CDF更新頻度](https://github.com/Ryot7m/Causal-comparison/blob/main/%E6%9B%B4%E6%96%B0%E9%A0%BB%E5%BA%A6.png)
 
+高期待層 セグメントでは最高評価（5点）の割合が増加
+高期待ユーザーほど最新情報の影響を強く受ける傾向が確認された
+
 ![DR-CDF豊富さ](https://github.com/Ryot7m/Causal-comparison/blob/main/%E8%B1%8A%E5%AF%8C%E3%81%95.png)
+
+低期待層 セグメントでは低評価（1〜3点）の割合が大きく減少
+推薦意向全体が中〜高評価側へシフト
+
+つまり、情報量を充実させることで、評価の低い利用者を改善する効果が大きいことが分かりました。
 
 ![DR-CDF詳細さ](https://github.com/Ryot7m/Causal-comparison/blob/main/%E8%A9%B3%E7%B4%B0%E3%81%95.png)
