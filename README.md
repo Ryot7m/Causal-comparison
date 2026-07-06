@@ -226,7 +226,15 @@ ATE
 | 1 | 108 | 233 | 0.072 | 0.000 | 0.948 |
 | 2 | 332 | 111 | 0.097 | 0.007 | 0.902 |
 
+### ATE
 ![ATE](https://private-user-images.githubusercontent.com/107174339/617125856-8ba8b228-effa-428a-be37-d9757949d605.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3ODMyNDExMzcsIm5iZiI6MTc4MzI0MDgzNywicGF0aCI6Ii8xMDcxNzQzMzkvNjE3MTI1ODU2LThiYThiMjI4LWVmZmEtNDI4YS1iZTM3LWQ5NzU3OTQ5ZDYwNS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwNzA1JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDcwNVQwODQwMzdaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01MWY5MmM2MWZjZjIxMjBmZDQ1ZDg5NDZkY2U4ODgzODQ0ZDY5OTQ0NzBiMjk1MjM1ZDQwNDczYjI1OTJjMThjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZwbmcifQ.AxK5T_0_c2zqghaL3WGPV5FORoTDfB4qlzRYzeUKmOE)
 
+### DR-CDF
+
+![DR-CDF正確性](https://github.com/Ryot7m/Causal-comparison/blob/main/%E6%AD%A3%E7%A2%BA%E6%80%A7.png)
+
 ![DR-CDF更新頻度](https://github.com/Ryot7m/Causal-comparison/blob/main/%E6%9B%B4%E6%96%B0%E9%A0%BB%E5%BA%A6.png)
+
 ![DR-CDF豊富さ](https://github.com/Ryot7m/Causal-comparison/blob/main/%E8%B1%8A%E5%AF%8C%E3%81%95.png)
+
+![DR-CDF詳細さ](https://github.com/Ryot7m/Causal-comparison/blob/main/%E8%A9%B3%E7%B4%B0%E3%81%95.png)
