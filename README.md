@@ -1,74 +1,46 @@
-# Ordinal Causal Segmentation
+# 顧客アンケートから「どの施策を優先すべきか」を因果推論で可視化(Ordinal Causal Segmentation)
 
-因果推論と順序データ解析を組み合わせ、
-利用者セグメントごとの施策効果を推定する分析パイプラインです。
+顧客アンケートの順序データ（5段階評価）を対象に、
+因果推論を用いて施策効果をセグメントごとに推定する分析パイプラインです。
 
-## このプロジェクトで実装したこと
+AIPW・Cross-fitting・DR-CDFを実装し、
+平均効果だけでなく分布全体の変化まで評価できます。
 
-- Propensity Score
-- Cross-fitting
-- AIPW
-- DR-CDF
-- Ordinal Classification
-- Segment Optimization
+## この分析で分かること
 
-Pythonで一連の分析パイプラインを実装しました。
+- どの施策が最も効果的か
+- どの利用者層に効果があるか
+- 平均値だけでは分からない評価分布の変化
+- 因果推論による比較可能なセグメント設計
 
-## 使用技術
+例えば、
 
-Python
+「情報量を改善すると推薦意向は向上するのか？」
 
-pandas
+「期待度が高い利用者ほど更新頻度は重要なのか？」
 
-NumPy
+といった施策効果を観察データから推定できます。
 
-scikit-learn
+## 主な分析結果
 
-matplotlib
+- 情報量（豊富さ）は全セグメントで最も大きな因果効果を示した
+- 高期待層では更新頻度改善による効果が大きかった
+- 低期待層では情報量改善により低評価の割合が減少した
 
-# 背景
-企業では、マーケティング施策やサービス改善の意思決定のために、アンケートや顧客満足度データが広く活用されています。特に、満足度や推薦意向のような 5段階評価（順序カテゴリデータ） は、サービス品質を評価する重要な指標です。
+### ATE
+ATEを用いて、各情報品質項目が推薦意向に与える平均的な因果効果を推定しました。
 
-しかし、従来の分析では平均値や単純な相関分析が中心であり、
+![ATE](https://private-user-images.githubusercontent.com/107174339/617125856-8ba8b228-effa-428a-be37-d9757949d605.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3ODMyNDExMzcsIm5iZiI6MTc4MzI0MDgzNywicGF0aCI6Ii8xMDcxNzQzMzkvNjE3MTI1ODU2LThiYThiMjI4LWVmZmEtNDI4YS1iZTM3LWQ5NzU3OTQ5ZDYwNS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwNzA1JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDcwNVQwODQwMzdaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01MWY5MmM2MWZjZjIxMjBmZDQ1ZDg5NDZkY2U4ODgzODQ0ZDY5OTQ0NzBiMjk1MjM1ZDQwNDczYjI1OTJjMThjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZwbmcifQ.AxK5T_0_c2zqghaL3WGPV5FORoTDfB4qlzRYzeUKmOE)
 
-- どの評価項目が推薦意向に影響しているのか
-- その関係が因果的なものなのか
-- どのような利用者に効果が大きいのか
+### DR-CDF
 
-を十分に把握することは困難です。
+平均値だけでは把握できない変化を確認するため、DR-CDFを用いて推薦意向の分布全体を比較しました。
 
-さらに、同じ満足度であっても、利用者の期待や属性によって推薦意向への影響は異なる可能性があります。そのため、平均的な分析結果だけでは、利用者ごとに最適な改善施策を検討することは難しいという課題があります。# -
+![DR-CDF更新頻度](https://github.com/Ryot7m/Causal-comparison/blob/main/%E6%9B%B4%E6%96%B0%E9%A0%BB%E5%BA%A6.png)
 
-# 目的
+![DR-CDF豊富さ](https://github.com/Ryot7m/Causal-comparison/blob/main/%E8%B1%8A%E5%AF%8C%E3%81%95.png)
 
-本プロジェクトでは、賃貸情報サイトにおける物件情報の質がユーザーの推薦意向へ与える影響を、観察データから因果推論によって推定することです。
-
-具体的には、
-
-- Propensity Scoreによる交絡調整
-- AIPWによる平均処置効果（ATE）の推定
-- DR-CDFによる分布全体の効果分析
-- 期待度セグメントごとの効果比較
-
-を実装し、
-
-利用者層ごとに優先して改善すべき情報品質を明らかにすることを目指しました。
-
-本プロジェクトでは、賃貸情報サイトのアンケートデータを対象に、
-
-- 因果推論による交絡の補正
-- 順序カテゴリデータに対応したアウトカムモデリング
-- 利用者の期待度に基づくセグメント分析
-
-を組み合わせることで、
-
-「どの情報品質を改善すると推薦意向が高まるのか」
-
-を利用者層ごとに推定できる分析パイプラインを実装しました。
-
-さらに、平均的な効果だけでなく、推薦意向の分布全体の変化を分析することで、利用者層ごとの反応の違いも可視化しました。
-
-# フロー図
+ フロー図
 ```mermaid
 flowchart TB
 A[Survey Data]
@@ -82,120 +54,89 @@ H[DR-CDF Analysis]
 I[Visualization]
  A --> B --> C --> D --> E --> F --> G --> H --> I
 ```
-# Step1 セグメント設計
 
-利用者全体を平均で評価するのではなく、
-期待度の異なる利用者層ごとに施策効果を比較する。
+## 使用技術
 
-### 実装内容
+Python
 
-期待度スコアから
+- pandas
+- NumPy
+- scikit-learn
+- matplotlib
 
-Low
-Middle
-High
+実装
 
-の3セグメントを生成。
+- Propensity Score
+- Cross-fitting
+- AIPW
+- DR-CDF
+- Ordinal Classification
+- Segment Optimization
 
-単純な分位点分割ではなく、
+## 工夫した点
 
-##### 設計診断指標
+### ① データリーク防止
 
-SMD
-,ESS
-,Overlap
+結果変数を利用せず、
+SMD・ESS・Overlapのみで
+セグメント境界を探索。
 
-を用いて因果推定しやすい境界を探索。
+---
 
-### 実装した関数
+### ② Cross-fitting
+
+Out-of-fold predictionを利用し、
+Propensity Score推定のバイアスを抑制。
+
+---
+
+### ③ Double Robust
+
+AIPWを採用することで、
+モデルの一部が誤指定でも
+推定の頑健性を確保。
+
+---
+
+### ④ 順序データ対応
+
+推薦意向をOrdinal Classificationで学習し、
+順序情報を保持した推定を実装。
+
+---
+
+### ⑤ 平均だけでなく分布も評価
+
+ATEだけでなく
+DR-CDFにより評価分布全体の変化を分析。
+
+## Notebook構成
+
+1. Data Loading
+2. Feature Engineering
+3. Segment Optimization
+4. Propensity Score
+5. Balance Diagnostics
+6. Outcome Model
+7. AIPW
+8. DR-CDF
+9. Visualization
+
+主要関数
+
 rank_cuts_design_optimal()
 
-### 工夫点
-
-結果変数（推薦意向）を見ずに境界を決定することで、
-データリークを防止。
-
-# Step2 Propensity Score
-交絡の補正を行う。
-
-### 実装内容
-Logistic Regression
-,Cross-fitting
-,Probability Calibration
-
-### 工夫点
-Out-of-fold predictionを用いて推定バイアスを抑制。
-
-### 実装した関数
 fit_ps_oof()
-Step3 Balance Diagnostics
-目的
 
-処置群と対照群が比較可能か確認する。
-
-### 評価指標
-
-SMD
-,ESS
-,Overlap
-### 実装した関数
 weighted_smd()
-weighted_smd_detail()
-# Step4 Outcome Model
-推薦意向は
 
-1,2,3,4,5
-
-という順序データである。
-
-通常の分類器では1と5を同じ距離として扱う。
-そこで
-Ordinal Classification
-を利用し、順序情報を保持した確率予測を実装。
-
-### 実装した関数
 fit_cf_oc()
-# Step5 AIPW
 
-平均処置効果（ATE）の推定。
-
-### 特徴
-Double Robust
-,Cross-fitting
-,Influence Function
-### 実装した関数
 oc_aipw_ate()
-# Step6 DR-CDF
-平均値だけでは分からない推薦意向の分布変化を評価。
 
-例えば平均は同じでも
-
-Before
-1 2 3 4 5
-
-↓
-
-After
-1 1 2 5 5
-
-では意味が違います。
-
-DR-CDFでは
-
-この変化を評価できます。
-
-### 実装した関数
 oc_dr_cdf_by_seg()
-# Step7 可視化
 
-ATE
-,DR-CDF
-,Influence Function
-,SMD
-
-を可視化。
-
-# 結果
+## 結果
 ### セグメント評価
 
 提案手法では、期待度のセグメント境界を設計診断指標に基づいて最適化し、各セグメント内で処置群と対照群を比較しやすいデータ構造を構築しました。
@@ -274,3 +215,35 @@ ATEを用いて、各情報品質項目が推薦意向に与える平均的な�
 つまり、情報量を充実させることで、評価の低い利用者を改善する効果が大きいことが分かりました。
 
 ![DR-CDF詳細さ](https://github.com/Ryot7m/Causal-comparison/blob/main/%E8%A9%B3%E7%B4%B0%E3%81%95.png)
+
+## 考察
+
+全セグメントで比較可能性を概ね確保した。
+
+その上で
+利用者層によって
+施策効果が異なることを確認した。
+
+## 今後の改善
+
+- XGBoostによるPropensity Score推定
+- Bootstrapによる信頼区間推定
+- 他データセットでの検証
+- Webアプリ化
+- パッケージ化
+
+## このプロジェクトでアピールできるスキル
+
+✓ 因果推論
+
+✓ 機械学習
+
+✓ 順序データ解析
+
+✓ セグメンテーション
+
+✓ Python実装
+
+✓ データ可視化
+
+✓ 分析パイプライン設計
