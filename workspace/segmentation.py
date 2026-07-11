@@ -342,3 +342,10 @@ def segmentation_rtn(data, seg_col, ftr_cols, A, X, Y):
 
     # # 3) overall_p95_abs_SMD : 外れ値1本に引っ張られにくい指標
     # overall_p95_abs_SMD = float(all_smd["abs_smd"].quantile(0.95))
+    
+    return  {
+        "X1" : X1,
+        "A0" : A0,
+        "Y0" : Y0,
+        "seg0" : seg0
+    }
