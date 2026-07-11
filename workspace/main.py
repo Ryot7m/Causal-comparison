@@ -13,6 +13,7 @@ from sklearn.metrics import auc
 import japanize_matplotlib
 from segmentation import segmentation_rtn
 from aipw import aipw_ate
+from ateplot import ate_plot
 
 data = pd.read_csv("使用データ.csv", encoding="shift-jis")
 
@@ -75,5 +76,6 @@ def make_calibrated_or_base(base_estimator, method, y, default_cv=3):
     else:
         return base_estimator
     
-segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
-aipw_ate(X1, A0, Y0, seg0)
+sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
+ate = aipw_ate(sgm["X1"], sgm["A0"], sgm["Y0"], sgm["seg0"])
+ate_plot(sgm["A0"], sgm["Y0"], ate["nuis"], ate["score"], sgm["seg0"])

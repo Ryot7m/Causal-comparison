@@ -149,3 +149,8 @@ def aipw_ate(X1, A0, Y0, seg0):
     nuis = fit_cf_oc(X1, A0, Y0, score, n_splits=5, random_state=123)
     res_ate = oc_aipw_ate(A0, Y0, score, nuis, seg0)
     print(f"AIPW-ATE{res_ate}")
+    
+    return {
+        "score" : score,
+        "nuis" : nuis
+    }
