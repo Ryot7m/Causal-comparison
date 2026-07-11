@@ -88,40 +88,39 @@ def oc_dr_cdf_by_seg(A, Y, nuis, seg, cap=None, level_labels=None):
             })
     return pd.DataFrame(rows)
 
-seg = data["seg_opt"].to_numpy()    # クラス列（しきい値分割で作ったもの）
-A   = data["treatment"].to_numpy()
-# Y は 0..K-1 にエンコード済みのあなたの Y を使う
-# levels_sorted も既にあるはず（元の1..5など）
+def drcdf_plot(A0, Y0, nuis, seg0, levels):
+    # Y は 0..K-1 にエンコード済みのYを使う
+    # levelsを用いて、欠損値（NaN）を除いた一意（ユニーク）な値のリストを作成し、それを昇順に並べ替える（元の1..5など）
 
-# if_c = 25
-cdf_seg = oc_dr_cdf_by_seg(
-    A=A0, Y=Y0, nuis=nuis, seg=seg0,
-    cap=None,                 
-    level_labels=levels_sorted
-)
+    # if_c = 25
+    cdf_seg = oc_dr_cdf_by_seg(
+        A=A0, Y=Y0, nuis=nuis, seg=seg0,
+        cap=None,                 
+        level_labels=levels
+    )
 
-print(cdf_seg.iloc[:, [0,1,6,7,10,11]]) #必要なデータのみ抽出
+    print(cdf_seg.iloc[:, [0,1,6,7,10,11]]) #必要なデータのみ抽出
 
-for g in sorted(cdf_seg["seg"].unique()):
-    d = cdf_seg[cdf_seg["seg"] == g].sort_values("c")
+    for g in sorted(cdf_seg["seg"].unique()):
+        d = cdf_seg[cdf_seg["seg"] == g].sort_values("c")
 
-    plt.figure()
-    plt.plot(d["threshold"], d["F1_dr"], marker="o", label="満足群")
-    plt.plot(d["threshold"], d["F0_dr"], marker="o", label="不満足群")
-    plt.xlabel("他者推薦の点数のしきい値")
-    plt.ylabel("累積確率")
-    # plt.title(f"DR-CDF (seg={g})")
-    plt.legend()
-    plt.show()
-    
-for g in sorted(cdf_seg["seg"].unique()):
-    d = cdf_seg[cdf_seg["seg"] == g].sort_values("c")
+        plt.figure()
+        plt.plot(d["threshold"], d["F1_dr"], marker="o", label="満足群")
+        plt.plot(d["threshold"], d["F0_dr"], marker="o", label="不満足群")
+        plt.xlabel("他者推薦の点数のしきい値")
+        plt.ylabel("累積確率")
+        # plt.title(f"DR-CDF (seg={g})")
+        plt.legend()
+        plt.show()
+        
+    for g in sorted(cdf_seg["seg"].unique()):
+        d = cdf_seg[cdf_seg["seg"] == g].sort_values("c")
 
-    plt.figure()
-    plt.plot(d["threshold"], d["tau_c"], marker="o", label="DR-CDF")
-    plt.fill_between(d["threshold"], d["ci_low"], d["ci_high"], alpha=0.3, label="95%CI")
-    plt.xlabel("他者推薦の点数のしきい値")
-    plt.ylabel("満足群 - 不満足群")
-    # plt.title(f"DR-CDF (seg={g})")
-    plt.legend()
-    plt.show()
+        plt.figure()
+        plt.plot(d["threshold"], d["tau_c"], marker="o", label="DR-CDF")
+        plt.fill_between(d["threshold"], d["ci_low"], d["ci_high"], alpha=0.3, label="95%CI")
+        plt.xlabel("他者推薦の点数のしきい値")
+        plt.ylabel("満足群 - 不満足群")
+        # plt.title(f"DR-CDF (seg={g})")
+        plt.legend()
+        plt.show()

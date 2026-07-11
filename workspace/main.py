@@ -10,10 +10,11 @@ from sklearn.isotonic import IsotonicRegression
 import matplotlib.pyplot as plt
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
 from sklearn.metrics import auc
-import japanize_matplotlib
+# import japanize_matplotlib
 from segmentation import segmentation_rtn
 from aipw import aipw_ate
 from ateplot import ate_plot
+from drcdf import drcdf_plot
 
 data = pd.read_csv("使用データ.csv", encoding="shift-jis")
 
@@ -79,3 +80,4 @@ def make_calibrated_or_base(base_estimator, method, y, default_cv=3):
 sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
 ate = aipw_ate(sgm["X1"], sgm["A0"], sgm["Y0"], sgm["seg0"])
 ate_plot(sgm["A0"], sgm["Y0"], ate["nuis"], ate["score"], sgm["seg0"])
+drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], levels_sorted)
