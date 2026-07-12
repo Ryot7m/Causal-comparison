@@ -45,6 +45,9 @@ ATEを用いて、各情報品質項目が推薦意向に与える平均的な�
 ![DR-CDF詳細さ](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E8%A9%B3%E7%B4%B0%E3%81%95.png)
 
 ### HEI
+
+HEIにより提案手法と比較手法のセグメント品質を比較した
+
 ![HEI](https://github.com/Ryot7m/Causal-comparison/blob/main/png/HEI.png)
 
  フロー図
