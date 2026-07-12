@@ -15,6 +15,7 @@ from segmentation import segmentation_rtn
 from aipw import aipw_ate
 from ateplot import ate_plot
 from drcdf import drcdf_plot
+from  hei import hei_result 
 
 data = pd.read_csv("使用データ.csv", encoding="shift-jis")
 
@@ -81,3 +82,4 @@ sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
 ate = aipw_ate(sgm["X1"], sgm["A0"], sgm["Y0"], sgm["seg0"])
 ate_plot(sgm["A0"], sgm["Y0"], ate["nuis"], ate["score"], sgm["seg0"])
 drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], levels_sorted)
+hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])
