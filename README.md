@@ -36,16 +36,16 @@ ATEを用いて、各情報品質項目が推薦意向に与える平均的な�
 
 平均値だけでは把握できない変化を確認するため、DR-CDFを用いて推薦意向の分布全体を比較しました。
 
-![DR-CDF正確性](https://github.com/Ryot7m/Causal-comparison/blob/main/%E6%AD%A3%E7%A2%BA%E6%80%A7.png)
+![DR-CDF正確性](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E6%AD%A3%E7%A2%BA%E6%80%A7.png)
 
-![DR-CDF更新頻度](https://github.com/Ryot7m/Causal-comparison/blob/main/%E6%9B%B4%E6%96%B0%E9%A0%BB%E5%BA%A6.png)
+![DR-CDF更新頻度](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E6%9B%B4%E6%96%B0%E9%A0%BB%E5%BA%A6.png)
 
-![DR-CDF豊富さ](https://github.com/Ryot7m/Causal-comparison/blob/main/%E8%B1%8A%E5%AF%8C%E3%81%95.png)
+![DR-CDF豊富さ](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E8%B1%8A%E5%AF%8C%E3%81%95.png)
 
-![DR-CDF詳細さ](https://github.com/Ryot7m/Causal-comparison/blob/main/%E8%A9%B3%E7%B4%B0%E3%81%95.png)
+![DR-CDF詳細さ](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E8%A9%B3%E7%B4%B0%E3%81%95.png)
 
 ### HEI
-![HEI](https://github.com/Ryot7m/Causal-comparison/blob/main/HEI.png)
+![HEI](https://github.com/Ryot7m/Causal-comparison/blob/main/png/HEI.png)
 
  フロー図
 ```mermaid
