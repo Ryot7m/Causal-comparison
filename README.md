@@ -126,17 +126,28 @@ AIPWを採用することで、
 ATEだけでなく
 DR-CDFにより評価分布全体の変化を分析。
 
-## Notebook構成
+## システム構成
 
-1. Data Loading
-2. Feature Engineering
-3. Segment Optimization
-4. Propensity Score
-5. Balance Diagnostics
-6. Outcome Model
-7. AIPW
-8. DR-CDF
-9. Visualization
+```text
+project/
+│
+│
+├── src/
+│   ├── main.py           # 共通関数・ユーティリティ
+│   ├── segmentation.py     # セグメント設計・Balance Diagnostics
+│   ├── aipw.py             # AIPW推定
+│   ├── drcdf.py            # DR-CDF推定
+│   ├── hei.py              # HEI評価
+│   └── visualization.py    # グラフ作成
+│
+├── figures/                # README掲載用の図
+|   ├── HEI.png
+|   ├── 更新頻度.png
+|   ├── 正確性.png
+|   ├── 詳細さ.png
+|   ├── 豊富さ.png
+└── README.md
+```
 
 主要関数
 
