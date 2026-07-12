@@ -1,3 +1,12 @@
+import numpy as np
+import pandas as pd
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import StratifiedKFold
+from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
+from main import make_calibrated_or_base
+
 def make_seg_from_cuts(S, cut1, cut2):
     """seg0: S<=cut1, seg1: cut1<S<=cut2, seg2: S>cut2"""
     S = np.asarray(S)

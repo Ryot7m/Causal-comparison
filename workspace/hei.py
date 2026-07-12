@@ -1,3 +1,7 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 def calculate_heterogeneity_score(pseudo_outcomes, predicted_scores):
     """
     ユーザーを予測スコアで10等分（デシル）し、

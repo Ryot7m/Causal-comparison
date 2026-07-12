@@ -1,3 +1,7 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 def oc_dr_cdf_by_seg(A, Y, nuis, seg, cap=None, level_labels=None):
     """
     クラス別 DR-CDF（F1-F0）を計算して DataFrame で返す。

@@ -1,3 +1,7 @@
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
 def _subset_nuis(nuis, idx):
     """nuis(dict) のうち、先頭次元がnの配列だけ idx で切る"""
     out = {}
