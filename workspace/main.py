@@ -10,37 +10,35 @@ from  hei import hei_result
 
 data = pd.read_csv("sample.csv", encoding="shift-jis")
 
-data["Q4_1"] = 6 - data["Q4_1"]
+data["Feature_1"] = 6 - data["Feature_1"]
 data = data.fillna(0)
 data_filt = data.filter(regex="Q16", axis = 1)
 data_filt = 5 - data_filt
 data = pd.concat([data, data_filt], axis = 1)
 
-# 列名の変更
+# 列名の変更(列名に応じて変更をしなくても可)
 data = data.rename(columns={
-    "Q1": "満足度",
-    "Q2_7": "正確性",
-    "Q2_8": "更新頻度",
-    "Q2_9": "豊富さ",
-    "Q2_10": "詳細さ",
-    "Q4_1": "他者推薦",
+    "Feature_1",
+    "Feature_2",
+    "Feature_12",
+    "Treatment",
+    "Outcome"
 })
 
-outcome_col = "他者推薦" 
-state_col = "詳細さ"
+outcome_col = "Outcome" 
+state_col = "Feature_1"
 score_rec = np.array([0, 1, 2, 3, 4],dtype= "float") 
 
 th_sh = data[state_col].quantile(0.75)
-data["treatment"] = (data[state_col] >= th_sh).astype(int)
-seg_col = "Q7_4"
+data["Treatment"] = (data[state_col] >= th_sh).astype(int)
+seg_col = "Outcome"
 
 #交絡因子
 ftr_cols = [c for c in data.columns]
-ftr_cols.remove("他者推薦")
-ftr_cols = [i for i in ftr_cols if i not in ['正確性', '更新頻度', '詳細さ',"豊富さ"]]
-ftr_cols.remove("treatment")
+ftr_cols.remove("Outcome")
+ftr_cols = [i for i in ftr_cols if i not in ['Feature_1', 'Feature_2', 'Feature_3',"Feature_4"]]
+ftr_cols.remove("treatment") #必要に応じて変数の削除
 ftr_cols.remove(seg_col)
-ftr_cols.remove("SQ2")
 
 X = pd.get_dummies(data[ftr_cols], drop_first=False).values
 A = data["treatment"].astype(int).values
