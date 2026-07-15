@@ -3,11 +3,14 @@ import pandas as pd
 
 from workspace.aipw import aipw_ate
 from workspace.segmentation import segmentation_rtn
+from workspace.ateplot import ate_plot
+from workspace.drcdf import drcdf_plot
+from workspace.hei import hei_result
 
 app = FastAPI()
 
 @app.post("/estimate")
-def estimate():
+async def estimate():
 
     data = pd.read_csv("sample.csv")
     
@@ -30,7 +33,14 @@ def estimate():
 
     sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
     ate = aipw_ate(sgm["X1"], sgm["A0"], sgm["Y0"], sgm["seg0"])
+    ate_plot(sgm["A0"], sgm["Y0"], ate["nuis"], ate["score"], sgm["seg0"])
+    dr_cdf = drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], levels_sorted)
+    hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])
 
-    return {
+    return{ {
         "ATE": ate["res"]
-    }
+    }, 
+    
+    {
+        "DRCDF" : dr_cdf
+    } }
