@@ -162,5 +162,6 @@ def aipw_ate(X1, A0, Y0, seg0):
     
     return {
         "score" : score,
-        "nuis" : nuis
+        "nuis" : nuis,
+        "res" : res_ate
     }

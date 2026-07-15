@@ -8,7 +8,7 @@ from ateplot import ate_plot
 from drcdf import drcdf_plot
 from  hei import hei_result 
 
-data = pd.read_csv("使用データ.csv", encoding="shift-jis")
+data = pd.read_csv("sample.csv", encoding="shift-jis")
 
 data["Q4_1"] = 6 - data["Q4_1"]
 data = data.fillna(0)
