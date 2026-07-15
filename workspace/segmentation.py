@@ -358,5 +358,7 @@ def segmentation_rtn(data, seg_col, ftr_cols, A, X, Y):
         "Y0" : Y0,
         "S0" : S0,
         "seg0" : seg0,
-        "per_seg" : per_seg_summary
+        "per_seg" : per_seg_summary,
+        "cut1" : cut1,
+        "cut2" : cut2
     }

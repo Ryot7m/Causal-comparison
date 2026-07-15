@@ -37,10 +37,18 @@ async def estimate():
     dr_cdf = drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], levels_sorted)
     hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])
 
-    return{ {
+    return{ "segment":{
+
+            "cut1":sgm["cut1"],
+            "cut2":sgm["cut2"]
+        },
+    "ate":{
         "ATE": ate["res"]
     }, 
     
-    {
+    "drcdf":{
         "DRCDF" : dr_cdf
-    } }
+    }, 
+    "hei":{
+    }
+    }
