@@ -73,13 +73,6 @@ def hei_result(nuis, A0, Y0, S0 ,per_seg_summary):
     print("==== Heterogeneity Score (Evaluation of Segmentation Quality) ====")
     print(heterogeneity_results.to_string(index=False))
 
-    smd_num = (
-        sum(row["n"] * row["seg_mean_abs_SMD"] for row in per_seg_summary)
-        /sum(row["n"] for row in per_seg_summary)
-    )
-    score_proposed /= smd_num
-    print(score_proposed)
-
     # HEIスコア（例）
     hei_proposed = [2.374609039743838, 5.471208523395044, 4.0615359970285985, 4.325312698877328]
     hei_rf = [3.1007619303123373, 3.1530651964461756, 2.296957473061643, 2.3988665311251305]
