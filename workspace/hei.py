@@ -23,6 +23,16 @@ def calculate_heterogeneity_score(pseudo_outcomes, predicted_scores):
     
     return heterogeneity_score
 
+def calculate_normalized_hei(pseudo_outcomes, predicted_scores, per_seg_summary):
+    heterogeneity = calculate_heterogeneity_score(pseudo_outcomes, predicted_scores)
+
+    smd_penalty = (
+        sum(row["n"] * row["seg_mean_abs_SMD"] for row in per_seg_summary)
+        / sum(row["n"] for row in per_seg_summary)
+    )
+
+    return heterogeneity / smd_penalty
+
 def hei_result(nuis, A0, Y0, S0 ,per_seg_summary):
     # =========================================================
     # pseudo_outcomes の定義（関数の外で再計算）
@@ -42,7 +52,7 @@ def hei_result(nuis, A0, Y0, S0 ,per_seg_summary):
     # =========================================================
     # 各モデルのHeterogeneity Scoreを算出
     # =========================================================
-    score_proposed = calculate_heterogeneity_score(aipw_pseudo_outcomes, -S0)
+    score_proposed = hei_proposed = calculate_normalized_hei(aipw_pseudo_outcomes, -S0, per_seg_summary)
 
     print(score_proposed)
 

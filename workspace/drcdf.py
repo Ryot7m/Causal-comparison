@@ -73,9 +73,6 @@ def oc_dr_cdf_by_seg(A, Y, nuis, seg, cap=None, level_labels=None):
             phi = score_c[idx_g] - float(score_c[idx_g].mean())
             se  = float(np.sqrt(np.mean(phi**2) / n_g))
             
-            if float(psi1[idx_g].mean()) <= 0.00000:
-                float(psi1[idx_g].mean()) == 0.00000
-
             rows.append({
                 "seg": int(g),
                 "c": int(c),
