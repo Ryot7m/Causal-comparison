@@ -133,7 +133,7 @@ def fit_cf_oc(X, A, Y, s_values, n_splits: int = 5, max_iter: int = 500, random_
         s_values=s_values, K=K
     )
     
-def oc_aipw_ate(A, Y, s_values, nuisance, seg):
+def oc_aipw_ate(A, Y, s_values, nuisance, seg, cap = None):
     seg = ensure_numpy(seg).astype(int)
     A = ensure_numpy(A).astype(int).ravel()
     Y = ensure_numpy(Y).astype(int).ravel()
@@ -142,7 +142,15 @@ def oc_aipw_ate(A, Y, s_values, nuisance, seg):
     e = nuisance["e_hat"] # 傾向スコア
     man = nuisance["mu1_hat"] # 満足群
     hum = nuisance["mu0_hat"] # 不満足群
-    score = (man - hum) + A/e*(Z - man) - (1-A)/(1-e)*(Z - hum) # AIPW（拡張逆確率重み推定量）の計算
+    
+    if cap is None:
+        w1 = A / e
+        w0 = (1 - A) / (1 - e)
+    else:
+        w1 = A * np.minimum(1.0 / e, cap)
+        w0 = (1 - A) * np.minimum(1.0 / (1.0 - e), cap)
+    
+    score = (man - hum) + w1*(Z - man) - w0*(Z - hum) # AIPW（拡張逆確率重み推定量）の計算
     lst = []
     for i in np.unique(seg):
         id = seg == i
@@ -157,7 +165,7 @@ def aipw_ate(X1, A0, Y0, seg0):
     score = np.asarray([0, 1, 2, 3, 4])
 
     nuis = fit_cf_oc(X1, A0, Y0, score, n_splits=5, random_state=123)
-    res_ate = oc_aipw_ate(A0, Y0, score, nuis, seg0)
+    res_ate = oc_aipw_ate(A0, Y0, score, nuis, seg0, cap = None)
     print(f"AIPW-ATE{res_ate}")
     
     return {
