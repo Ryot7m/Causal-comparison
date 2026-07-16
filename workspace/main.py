@@ -18,11 +18,12 @@ data = pd.concat([data, data_filt], axis = 1)
 
 # 列名の変更(列名に応じて変更をしなくても可)
 data = data.rename(columns={
-    "Feature_1",
-    "Feature_2",
-    "Feature_12",
-    "Treatment",
-    "Outcome"
+    "満足度A":"Feature_1",
+    "満足度B":"Feature_2",
+    "満足度C":"Feature_12",
+    "期待値":"except",
+    "処置":"Treatment",
+    "アウトカム変数":"Outcome"
 })
 
 outcome_col = "Outcome" 
@@ -31,7 +32,7 @@ score_rec = np.array([0, 1, 2, 3, 4],dtype= "float")
 
 th_sh = data[state_col].quantile(0.75)
 data["Treatment"] = (data[state_col] >= th_sh).astype(int)
-seg_col = "Outcome"
+seg_col = "except"
 
 #交絡因子
 ftr_cols = [c for c in data.columns]
@@ -61,13 +62,12 @@ def make_calibrated_or_base(base_estimator, method, y, default_cv=3):
     if y is None or len(y) == 0:
         return base_estimator #データ無しも同様
     _, counts = np.unique(y, return_counts=True) #目的変数の値の計算
-    min_count = counts.min() if len(counts) else 0
-    if min_count >= 2: #サンプル数に応じた交差検証
+    min_count = counts.min()
+    cv = min(default_cv, int(min_count))
+    if cv >= 2: #サンプル数に応じた交差検証
         return CalibratedClassifierCV(base_estimator, method=method, cv=default_cv)
     if len(counts) == 0:
         return base_estimator
-    min_count = counts.min()
-    cv = min(default_cv, int(min_count))
     if cv >= 2: #サンプル数に応じた交差検証
         return CalibratedClassifierCV(base_estimator, method=method, cv=cv)
     else:
@@ -75,6 +75,6 @@ def make_calibrated_or_base(base_estimator, method, y, default_cv=3):
     
 sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
 ate = aipw_ate(sgm["X1"], sgm["A0"], sgm["Y0"], sgm["seg0"])
-ate_plot(sgm["A0"], sgm["Y0"], ate["nuis"], ate["score"], sgm["seg0"])
+ate_plot(sgm["A0"], sgm["Y0"], ate["score"], ate["nuis"], sgm["seg0"])
 drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], levels_sorted)
 hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])
