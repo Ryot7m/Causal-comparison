@@ -46,8 +46,13 @@ A = data["treatment"].astype(int).values
 
 levels = pd.Series(data[outcome_col]).dropna().unique().tolist()
 levels_sorted = sorted(levels)  
-y_to_index = {lev:i for i, lev in enumerate(levels_sorted)}
-Y = pd.Series(data[outcome_col]).map(y_to_index).astype(int).values
+# y_to_index = {lev:i for i, lev in enumerate(levels_sorted)}
+
+outcome_levels = [1, 2, 3, 4, 5]  # 必ず意味上の順序で指定
+
+y_to_index = {level: i for i, level in enumerate(outcome_levels)}
+Y = data["Outcome"].map(y_to_index).astype(int).to_numpy()
+# Y = pd.Series(data[outcome_col]).map(y_to_index).astype(int).values
 
 K = len(levels_sorted)
 
