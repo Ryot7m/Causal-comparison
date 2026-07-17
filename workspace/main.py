@@ -79,7 +79,7 @@ def make_calibrated_or_base(base_estimator, method, y, default_cv=3):
         return base_estimator
     
 sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
-ate = aipw_ate(sgm["X1"], sgm["A0"], sgm["Y0"], sgm["seg0"])
+ate = aipw_ate(sgm["X0"], sgm["A0"], sgm["Y0"], sgm["seg0"], 100)
 ate_plot(sgm["A0"], sgm["Y0"], ate["score"], ate["nuis"], sgm["seg0"])
 drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], levels_sorted)
 hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])

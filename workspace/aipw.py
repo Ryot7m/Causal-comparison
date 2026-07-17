@@ -133,7 +133,7 @@ def fit_cf_oc(X, A, Y, s_values, n_splits: int = 5, max_iter: int = 500, random_
         s_values=s_values, K=K
     )
     
-def oc_aipw_ate(A, Y, s_values, nuisance, seg, cap = None):
+def oc_aipw_ate(A, Y, s_values, nuisance, seg, cap = 100):
     seg = ensure_numpy(seg).astype(int)
     A = ensure_numpy(A).astype(int).ravel()
     Y = ensure_numpy(Y).astype(int).ravel()

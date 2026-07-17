@@ -261,10 +261,7 @@ def segmentation_rtn(data, seg_col, ftr_cols, A, X, Y):
     print("seg info:", best["seg_info"])
     print(pd.crosstab(data["seg_opt"], data["treatment"]))
 
-    base_cols=["SQ1","SQ3","SQ8","Q5_2","Q12_2","Q14_2","Q28","Q29","Q30","Q31","Q38","Q39","Q41"]
-    X_ps = data[base_cols].copy()
-
-    X_ps = pd.get_dummies(X_ps, columns=base_cols, drop_first=True)
+    X_ps = pd.get_dummies(X_ps, columns=ftr_cols, drop_first=True)
 
     # --- rank_cuts_design_optimal と同じ “欠損除外” で確認 ---
     ok = ~pd.isna(S)
@@ -274,15 +271,12 @@ def segmentation_rtn(data, seg_col, ftr_cols, A, X, Y):
 
     # X は numpy なので列名が消えている。dummiesの列名を復元する
     X_df0 = pd.get_dummies(data.loc[ok, ftr_cols], drop_first=False)
-    X_ps0 = pd.get_dummies(data.loc[ok, base_cols], drop_first=False)
-    feature_names = list(X_ps0.columns)
+    feature_names = list(X_df0.columns)
     X0 = X_df0.values
-    X1 = X_ps0.values
 
     seg0 = make_seg_from_cuts(S0, cut1, cut2)
     per_seg_summary = []
     all_rows = []
-    seg_max_abs = []
 
     for g in [0, 1, 2]:
         idx_g = (seg0 == g)
@@ -296,10 +290,10 @@ def segmentation_rtn(data, seg_col, ftr_cols, A, X, Y):
             continue
         
         # 3) seg0に切る
-        e_hat = fit_ps_oof(X1[idx_g], A0[idx_g], C=0.5, calibration="isotonic", eps=1e-2)
+        e_hat = fit_ps_oof(X0[idx_g], A0[idx_g], C=0.5, calibration="isotonic", eps=1e-2)
         # e_hat_g_g = e_hat[idx_g]
         # 4) SMD詳細（上位表示）
-        df_smd = weighted_smd_detail(X1[idx_g], A0[idx_g], e_hat, cap_weight=None, feature_names = feature_names)
+        df_smd = weighted_smd_detail(X0[idx_g], A0[idx_g], e_hat, cap_weight=None, feature_names = feature_names)
         max_abs = float(df_smd["abs_smd"].iloc[0])
         mean_abs = float(df_smd["abs_smd"].mean())
         p95_abs = float(df_smd["abs_smd"].quantile(0.95))
@@ -353,7 +347,7 @@ def segmentation_rtn(data, seg_col, ftr_cols, A, X, Y):
     # overall_p95_abs_SMD = float(all_smd["abs_smd"].quantile(0.95))
     
     return  {
-        "X1" : X1,
+        "X0" : X0,
         "A0" : A0,
         "Y0" : Y0,
         "S0" : S0,
