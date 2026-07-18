@@ -1,12 +1,18 @@
+
+"""
+このコードは研究の流れを基に各関数を呼び出して、
+それぞれの機能を繋げる役割を持つコードである
+"""
+
 import numpy as np
 import pandas as pd
 from sklearn.calibration import CalibratedClassifierCV
 # import japanize_matplotlib
-from segmentation import segmentation_rtn
-from aipw import aipw_ate
-from ateplot import ate_plot
-from drcdf import drcdf_plot
-from  hei import hei_result 
+from workspace.segmentation import segmentation_rtn
+from workspace.aipw import aipw_ate
+from workspace.ateplot import ate_plot
+from workspace.drcdf import drcdf_plot
+from workspace.hei import hei_result 
 
 data = pd.read_csv("sample.csv", encoding="shift-jis")
 
