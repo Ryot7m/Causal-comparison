@@ -38,7 +38,7 @@ seg_col = "except"
 ftr_cols = [c for c in data.columns]
 ftr_cols.remove("Outcome")
 ftr_cols = [i for i in ftr_cols if i not in ['Feature_1', 'Feature_2', 'Feature_3',"Feature_4"]]
-ftr_cols.remove("treatment") #必要に応じて変数の削除
+ftr_cols.remove("Treatment") #必要に応じて変数の削除
 ftr_cols.remove(seg_col)
 
 X = pd.get_dummies(data[ftr_cols], drop_first=False).values

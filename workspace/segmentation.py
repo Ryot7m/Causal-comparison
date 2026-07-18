@@ -259,9 +259,7 @@ def segmentation_rtn(data, seg_col, ftr_cols, A, X, Y):
     data["seg_opt"] = make_seg_from_cuts(S, cut1, cut2)
     print("best cuts:", cut1, cut2)
     print("seg info:", best["seg_info"])
-    print(pd.crosstab(data["seg_opt"], data["treatment"]))
-
-    X_ps = pd.get_dummies(X_ps, columns=ftr_cols, drop_first=True)
+    print(pd.crosstab(data["seg_opt"], data["Treatment"]))
 
     # --- rank_cuts_design_optimal と同じ “欠損除外” で確認 ---
     ok = ~pd.isna(S)

@@ -161,11 +161,11 @@ def oc_aipw_ate(A, Y, s_values, nuisance, seg, cap = 100):
         lst.append([i, len(phi), tau, se, tau - 1.96*se, tau + 1.96*se])
     return pd.DataFrame(lst, columns = ["cls", "clsnum", "ate", "se", "95ci_low", "95ci_high"])
 
-def aipw_ate(X1, A0, Y0, seg0):
+def aipw_ate(X1, A0, Y0, seg0, cap_):
     score = np.asarray([0, 1, 2, 3, 4])
 
     nuis = fit_cf_oc(X1, A0, Y0, score, n_splits=5, random_state=123)
-    res_ate = oc_aipw_ate(A0, Y0, score, nuis, seg0, cap = None)
+    res_ate = oc_aipw_ate(A0, Y0, score, nuis, seg0, cap = cap_)
     print(f"AIPW-ATE{res_ate}")
     
     return {
