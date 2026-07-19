@@ -6,6 +6,7 @@ from workspace.segmentation import segmentation_rtn
 from workspace.ateplot import ate_plot
 from workspace.drcdf import drcdf_plot
 from workspace.hei import hei_result
+from fastapi import UploadFile
 from app.config import (
     OUTCOME_COL,
     TREATMENT_COL,
@@ -21,25 +22,21 @@ async def load_csv(file: UploadFile) -> pd.DataFrame:
     )
     
 def validate_data(
-    df: pd.DataFrame,
-    outcome: str,
-    treatment_col: str
+    data: pd.DataFrame
 ):
 
-    if OUTCOME_COL not in df.columns:
+    if OUTCOME_COL not in data.columns:
         raise ValueError(
             f"{OUTCOME_COL} が存在しません。"
         )
 
-    if TREATMENT_COL not in df.columns:
+    if TREATMENT_COL not in data.columns:
         raise ValueError(
             f"{TREATMENT_COL} が存在しません。"
         )
     
 def preprocess(
-    data,
-    outcome,
-    treatment_col
+    data
 ):
 
     ftr_cols = [
@@ -87,3 +84,13 @@ def create_response(result):
 
         "hei": result["hei"]
     }
+    
+async def estimate_service(file: UploadFile):
+
+    df = await load_csv(file)
+
+    validate_data(df)
+
+    result = preprocess(df)
+
+    return create_response(result)
