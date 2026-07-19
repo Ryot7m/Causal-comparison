@@ -7,27 +7,48 @@ from workspace.ateplot import ate_plot
 from workspace.drcdf import drcdf_plot
 from workspace.hei import hei_result
 
-async def estimate_service(file):
+async def load_csv(file: UploadFile) -> pd.DataFrame:
 
     contents = await file.read()
 
-    data = pd.read_csv(
-        StringIO(
-            contents.decode("utf-8")
-        )
+    return pd.read_csv(
+        StringIO(contents.decode("utf-8"))
     )
     
+def validate_data(
+    df: pd.DataFrame,
+    outcome_col: str,
+    treatment_col: str
+):
+
+    if outcome_col not in df.columns:
+        raise ValueError(
+            f"{outcome_col} が存在しません。"
+        )
+
+    if treatment_col not in df.columns:
+        raise ValueError(
+            f"{treatment_col} が存在しません。"
+        )
+    
+def preprocess(
+    data,
+    outcome_col,
+    treatment_col
+):
+
+    ftr_cols = [
+        c for c in data.columns
+        if c not in [
+            outcome_col,
+            treatment_col
+        ]
+    ]
+
     seg_col = "Outcome"
 
-    outcome_col = "Outcome"
-    ftr_cols = [c for c in data.columns]
-    ftr_cols.remove("Outcome")
-    ftr_cols = [i for i in ftr_cols if i not in ['Feature_1', 'Feature_2', 'Feature_3',"Feature_4"]]
-    ftr_cols.remove("treatment") #必要に応じて変数の削除
-    ftr_cols.remove(seg_col)
-
     X = pd.get_dummies(data[ftr_cols], drop_first=False).values
-    A = data["treatment"].astype(int).values
+    A = data[treatment_col].astype(int).values
 
     levels = pd.Series(data[outcome_col]).dropna().unique().tolist()
     levels_sorted = sorted(levels)  
@@ -38,20 +59,29 @@ async def estimate_service(file):
     ate = aipw_ate(sgm["X1"], sgm["A0"], sgm["Y0"], sgm["seg0"])
     ate_plot(sgm["A0"], sgm["Y0"], ate["nuis"], ate["score"], sgm["seg0"])
     dr_cdf = drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], levels_sorted)
-    hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])
+    hei = hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])
+    
+    return {
 
-    return{ "segment":{
-
-            "cut1":sgm["cut1"],
-            "cut2":sgm["cut2"]
-        },
-    "ate":{
-        "ATE": ate["res"]
-    }, 
-
-    "drcdf":{
-        "DRCDF" : dr_cdf
-    }, 
-    "hei":{
+        "segment": sgm,
+        "ate": ate,
+        "drcdf": dr_cdf,
+        "hei" : hei
     }
+
+def create_response(result):
+    return {
+
+        "segment": {
+
+            "cut1": result["segment"]["cut1"],
+            "cut2": result["segment"]["cut2"]
+
+        },
+
+        "ate": result["ate"]["res"],
+
+        "drcdf": result["drcdf"],
+
+        "hei": result["hei"]
     }
