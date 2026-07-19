@@ -6,6 +6,11 @@ from workspace.segmentation import segmentation_rtn
 from workspace.ateplot import ate_plot
 from workspace.drcdf import drcdf_plot
 from workspace.hei import hei_result
+from app.config import (
+    OUTCOME_COL,
+    TREATMENT_COL,
+    EXCLUDE_COLUMNS,
+)
 
 async def load_csv(file: UploadFile) -> pd.DataFrame:
 
@@ -17,43 +22,40 @@ async def load_csv(file: UploadFile) -> pd.DataFrame:
     
 def validate_data(
     df: pd.DataFrame,
-    outcome_col: str,
+    outcome: str,
     treatment_col: str
 ):
 
-    if outcome_col not in df.columns:
+    if OUTCOME_COL not in df.columns:
         raise ValueError(
-            f"{outcome_col} が存在しません。"
+            f"{OUTCOME_COL} が存在しません。"
         )
 
-    if treatment_col not in df.columns:
+    if TREATMENT_COL not in df.columns:
         raise ValueError(
-            f"{treatment_col} が存在しません。"
+            f"{TREATMENT_COL} が存在しません。"
         )
     
 def preprocess(
     data,
-    outcome_col,
+    outcome,
     treatment_col
 ):
 
     ftr_cols = [
         c for c in data.columns
-        if c not in [
-            outcome_col,
-            treatment_col
-        ]
+        if c not in EXCLUDE_COLUMNS
     ]
 
     seg_col = "Outcome"
 
     X = pd.get_dummies(data[ftr_cols], drop_first=False).values
-    A = data[treatment_col].astype(int).values
+    A = data[TREATMENT_COL].astype(int).values
 
-    levels = pd.Series(data[outcome_col]).dropna().unique().tolist()
+    levels = pd.Series(data[OUTCOME_COL]).dropna().unique().tolist()
     levels_sorted = sorted(levels)  
     y_to_index = {lev:i for i, lev in enumerate(levels_sorted)}
-    Y = pd.Series(data[outcome_col]).map(y_to_index).astype(int).values
+    Y = pd.Series(data[OUTCOME_COL]).map(y_to_index).astype(int).values
 
     sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
     ate = aipw_ate(sgm["X1"], sgm["A0"], sgm["Y0"], sgm["seg0"])
