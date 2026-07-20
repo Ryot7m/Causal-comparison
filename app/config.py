@@ -8,11 +8,13 @@ Application Configuration
 
 OUTCOME_COL = "Outcome"
 TREATMENT_COL = "Treatment"
+EXPERT_COL = "expert"
 
 # 説明変数から除外する列
 EXCLUDE_COLUMNS = [
     OUTCOME_COL,
     TREATMENT_COL,
+    EXPERT_COL
 ]
 
 # ==========================

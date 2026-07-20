@@ -7,10 +7,8 @@ router = APIRouter(
     tags=["Estimate"]
 )
 
-@router.post(
-    prefix="/api",
-    tags=["Estimate"]
-)
+@router.post("/estimate", response_model=EstimateResponse)
+
 async def estimate(file : UploadFile = File(...)):
     
     try:
