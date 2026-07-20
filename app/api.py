@@ -1,6 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from app.schemas import EstimateResponse
-from app.services import estimate_service
+from app.dantic import EstimateResponse
+from app.analysis import estimate_service
 
 router = APIRouter(
     prefix="/api",
