@@ -2,20 +2,29 @@ from fastapi import APIRouter, UploadFile, File, HTTPException
 from app.schemas import EstimateResponse
 from app.services import estimate_service
 
-app = APIRouter()
+router = APIRouter(
+    prefix="/api",
+    tags=["Estimate"]
+)
 
 @router.post(
-    "/estimate",
-    response_model=EstimateResponse
+    prefix="/api",
+    tags=["Estimate"]
 )
-async def estimate(file : UploadFile = File("sample.csv")):
+async def estimate(file : UploadFile = File(...)):
     
     try:
         result = await estimate_service(file)
         return result
 
-    except Exception as e:
+    except ValueError as e:
         raise HTTPException(
             status_code=400,
             detail=str(e)
+        )
+        
+    except Exception:
+        raise HTTPException(
+            status_code=500,
+            detail="Internal Server Error"
         )

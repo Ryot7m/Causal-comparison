@@ -6,52 +6,91 @@ from workspace.segmentation import segmentation_rtn
 from workspace.ateplot import ate_plot
 from workspace.drcdf import drcdf_plot
 from workspace.hei import hei_result
+from fastapi import UploadFile
+from app.config import (
+    OUTCOME_COL,
+    TREATMENT_COL,
+    EXCLUDE_COLUMNS,
+)
 
-async def estimate_service(file):
+async def load_csv(file: UploadFile) -> pd.DataFrame:
 
     contents = await file.read()
 
-    data = pd.read_csv(
-        StringIO(
-            contents.decode("utf-8")
-        )
+    return pd.read_csv(
+        StringIO(contents.decode("utf-8"))
     )
     
+def validate_data(
+    data: pd.DataFrame
+):
+
+    if OUTCOME_COL not in data.columns:
+        raise ValueError(
+            f"{OUTCOME_COL} が存在しません。"
+        )
+
+    if TREATMENT_COL not in data.columns:
+        raise ValueError(
+            f"{TREATMENT_COL} が存在しません。"
+        )
+    
+def preprocess(
+    data
+):
+
+    ftr_cols = [
+        c for c in data.columns
+        if c not in EXCLUDE_COLUMNS
+    ]
+
     seg_col = "Outcome"
 
-    outcome_col = "Outcome"
-    ftr_cols = [c for c in data.columns]
-    ftr_cols.remove("Outcome")
-    ftr_cols = [i for i in ftr_cols if i not in ['Feature_1', 'Feature_2', 'Feature_3',"Feature_4"]]
-    ftr_cols.remove("treatment") #必要に応じて変数の削除
-    ftr_cols.remove(seg_col)
-
     X = pd.get_dummies(data[ftr_cols], drop_first=False).values
-    A = data["treatment"].astype(int).values
+    A = data[TREATMENT_COL].astype(int).values
 
-    levels = pd.Series(data[outcome_col]).dropna().unique().tolist()
+    levels = pd.Series(data[OUTCOME_COL]).dropna().unique().tolist()
     levels_sorted = sorted(levels)  
     y_to_index = {lev:i for i, lev in enumerate(levels_sorted)}
-    Y = pd.Series(data[outcome_col]).map(y_to_index).astype(int).values
+    Y = pd.Series(data[OUTCOME_COL]).map(y_to_index).astype(int).values
 
     sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
     ate = aipw_ate(sgm["X1"], sgm["A0"], sgm["Y0"], sgm["seg0"])
     ate_plot(sgm["A0"], sgm["Y0"], ate["nuis"], ate["score"], sgm["seg0"])
     dr_cdf = drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], levels_sorted)
-    hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])
+    hei = hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])
+    
+    return {
 
-    return{ "segment":{
+        "segment": sgm,
+        "ate": ate,
+        "drcdf": dr_cdf,
+        "hei" : hei
+    }
 
-            "cut1":sgm["cut1"],
-            "cut2":sgm["cut2"]
+def create_response(result):
+    return {
+
+        "segment": {
+
+            "cut1": result["segment"]["cut1"],
+            "cut2": result["segment"]["cut2"]
+
         },
-    "ate":{
-        "ATE": ate["res"]
-    }, 
 
-    "drcdf":{
-        "DRCDF" : dr_cdf
-    }, 
-    "hei":{
+        "ate": result["ate"]["res"],
+
+        "drcdf": result["drcdf"],
+
+        "hei": result["hei"]
     }
-    }
+    
+async def estimate_service(file: UploadFile):
+
+    df = await load_csv(file)
+
+    validate_data(df)
+
+    result = preprocess(df)
+
+    return create_response(result)
