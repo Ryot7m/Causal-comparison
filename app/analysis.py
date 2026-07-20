@@ -10,6 +10,7 @@ from fastapi import UploadFile
 from app.config import (
     OUTCOME_COL,
     TREATMENT_COL,
+    EXPERT_COL,
     EXCLUDE_COLUMNS,
 )
 
@@ -44,8 +45,6 @@ def preprocess(
         if c not in EXCLUDE_COLUMNS
     ]
 
-    seg_col = "Outcome"
-
     X = pd.get_dummies(data[ftr_cols], drop_first=False).values
     A = data[TREATMENT_COL].astype(int).values
 
@@ -53,11 +52,21 @@ def preprocess(
     levels_sorted = sorted(levels)  
     y_to_index = {lev:i for i, lev in enumerate(levels_sorted)}
     Y = pd.Series(data[OUTCOME_COL]).map(y_to_index).astype(int).values
+    
+    return {
+        "feature" : ftr_cols,
+        "A" : A,
+        "X" : X,
+        "Y" : Y,
+        "level" : levels_sorted
+    }
+    
+def estimate(data, prep):
 
-    sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
+    sgm = segmentation_rtn(data, EXPERT_COL, prep["feature"], prep["A"], prep["X"], prep["Y"])
     ate = aipw_ate(sgm["X1"], sgm["A0"], sgm["Y0"], sgm["seg0"])
     ate_plot(sgm["A0"], sgm["Y0"], ate["nuis"], ate["score"], sgm["seg0"])
-    dr_cdf = drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], levels_sorted)
+    dr_cdf = drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], prep["level"])
     hei = hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])
     
     return {
@@ -87,10 +96,12 @@ def create_response(result):
     
 async def estimate_service(file: UploadFile):
 
-    df = await load_csv(file)
+    data = await load_csv(file)
 
-    validate_data(df)
+    validate_data(data)
 
-    result = preprocess(df)
+    prep = preprocess(data)
+    
+    result = estimate(data, prep)
 
     return create_response(result)
