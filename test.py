@@ -12,24 +12,23 @@ from workspace.aipw import aipw_ate
 from workspace.ateplot import ate_plot
 from workspace.drcdf import drcdf_plot
 from workspace.hei import hei_result 
-from fastapi import FastAPI
-from app.api import router
+# from app.api import router
 
-from app.config import (
-    API_TITLE,
-    API_VERSION
-)
+# from app.config import (
+#     API_TITLE,
+#     API_VERSION
+# )
 
-app = FastAPI(
-    title=API_TITLE,
-    version=API_VERSION,
-)
+# app = FastAPI(
+#     title=API_TITLE,
+#     version=API_VERSION,
+# )
 
-app.include_router(router)
+# app.include_router(router)
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+# @app.get("/health")
+# def health():
+#     return {"status": "ok"}
 
 data = pd.read_csv("sample.csv", encoding="shift-jis")
 
