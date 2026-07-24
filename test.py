@@ -5,31 +5,13 @@
 
 import numpy as np
 import pandas as pd
-from sklearn.calibration import CalibratedClassifierCV
+
 # import japanize_matplotlib
 from workspace.segmentation import segmentation_rtn
 from workspace.aipw import aipw_ate
 from workspace.ateplot import ate_plot
 from workspace.drcdf import drcdf_plot
 from workspace.hei import hei_result 
-from fastapi import FastAPI
-from app.api import router
-
-from app.config import (
-    API_TITLE,
-    API_VERSION
-)
-
-app = FastAPI(
-    title=API_TITLE,
-    version=API_VERSION,
-)
-
-app.include_router(router)
-
-@app.get("/health")
-def health():
-    return {"status": "ok"}
 
 data = pd.read_csv("sample.csv", encoding="shift-jis")
 
@@ -79,27 +61,7 @@ Y = data["Outcome"].map(y_to_index).astype(int).to_numpy()
 
 K = len(levels_sorted)
 
-def make_calibrated_or_base(base_estimator, method, y, default_cv=3):
-    """
-    モデルに対してキャリブレーションを行い、
-    クラスの頻度に合わせたクロスバリデーションで調整する
-    segmentation.py,aipw.pyで使用
-    """
-    if method not in ("isotonic", "sigmoid"):
-        return base_estimator #これらを除き、キャリブレーションを行わない
-    if y is None or len(y) == 0:
-        return base_estimator #データ無しも同様
-    _, counts = np.unique(y, return_counts=True) #目的変数の値の計算
-    min_count = counts.min()
-    cv = min(default_cv, int(min_count))
-    if cv >= 2: #サンプル数に応じた交差検証
-        return CalibratedClassifierCV(base_estimator, method=method, cv=default_cv)
-    if len(counts) == 0:
-        return base_estimator
-    if cv >= 2: #サンプル数に応じた交差検証
-        return CalibratedClassifierCV(base_estimator, method=method, cv=cv)
-    else:
-        return base_estimator
+
     
 sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
 ate = aipw_ate(sgm["X0"], sgm["A0"], sgm["Y0"], sgm["seg0"], 100)

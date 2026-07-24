@@ -6,7 +6,7 @@ from sklearn.linear_model import LogisticRegression, Ridge
 from sklearn.model_selection import KFold
 from sklearn.isotonic import IsotonicRegression
 from sklearn.ensemble import HistGradientBoostingClassifier, RandomForestClassifier
-from main import make_calibrated_or_base
+from workspace.calibrated import make_calibrated_or_base
 
 def ensure_numpy(x):
     if isinstance(x, (pd.Series, pd.DataFrame)):
