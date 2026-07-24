@@ -1,3 +1,9 @@
+import os
+import sys
+
+print("cwd =", os.getcwd())
+print("sys.path =", sys.path)
+
 from fastapi import FastAPI
 from app.api import router
 
