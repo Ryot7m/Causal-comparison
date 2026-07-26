@@ -47,7 +47,7 @@ ftr_cols.remove("Treatment") #必要に応じて変数の削除
 ftr_cols.remove(seg_col)
 
 X = pd.get_dummies(data[ftr_cols], drop_first=False).values
-A = data["treatment"].astype(int).values
+A = data["Treatment"].astype(int).values
 
 levels = pd.Series(data[outcome_col]).dropna().unique().tolist()
 levels_sorted = sorted(levels)  
