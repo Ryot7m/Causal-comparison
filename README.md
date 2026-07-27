@@ -266,7 +266,7 @@ HEI
 
 ## 評価結果
 
-提案手法を既存の因果クラスタリング手法と比較しました。
+本研究では、提案手法の有効性を評価するため、既存手法である Causal Clustering と比較を行いました。同一データセット・同一評価指標（ATE、DR-CDF、HEI、SMD、ESS）を用いて性能を比較しています。
 
 評価指標
 
@@ -275,14 +275,6 @@ HEI
 - Heterogeneity Evaluation Index (HEI)
 - Standardized Mean Difference (SMD)
 - Effective Sample Size (ESS)
-
-### 比較結果
-
-| 手法 | HEI | 特徴 |
-|------|----:|------|
-| 提案手法 | ○○ | 高い異質性と解釈性 |
-| Causal Clustering | ○○ | 高い異質性 |
-| Linear Model | ○○ | 異質性は小さい |
 
 ### 分析例
 
@@ -298,6 +290,8 @@ HEI
 ![DR-CDF豊富さ](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E8%B1%8A%E5%AF%8C%E3%81%95.png)
 
 ![DR-CDF詳細さ](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E8%A9%B3%E7%B4%B0%E3%81%95.png)
+
+### 比較結果
 
 - HEI
 
@@ -332,3 +326,5 @@ HEI
 | 0 | 56 | 485 | 0.131 | 0.081 | 0.800 |
 | 1 | 108 | 233 | 0.072 | 0.000 | 0.948 |
 | 2 | 332 | 111 | 0.097 | 0.007 | 0.902 |
+
+提案手法は、Causal Clusteringと同等またはそれ以上の異質性を示しつつ、特徴量に基づく単純なセグメント境界を用いることで、高い解釈性を維持しています。
