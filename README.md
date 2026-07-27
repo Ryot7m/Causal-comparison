@@ -1,16 +1,17 @@
 # Causal Inference Platform
 
-FastAPIを用いた因果推論分析プラットフォームです。
+因果推論アルゴリズムを、FastAPIとDockerを用いてAPI化した分析プラットフォームです。
 
 CSVをアップロードすると
 
-- セグメンテーション
-- AIPW推定
-- DR-CDF
-- HEI
+- 解釈可能な因果セグメンテーション
+- AIPWによるセグメント別の平均処置効果推定
+- DR-CDFによるアウトカム分布への効果推定
+- HEIによるセグメント間の異質性評価
 
-を自動実行し、
-API経由で分析結果を取得できます。
+を分析結果はJSON形式で取得でき、Swagger UIからAPIを実行します。
+
+本プロジェクトは、前処理、推定、レスポンス生成までを一連の分析パイプラインとして構築しています。
 
 ## この分析で分かること
 
@@ -47,12 +48,12 @@ API経由で分析結果を取得できます。
         ▼                  ▼                  ▼
  segmentation.py      aipw.py          drcdf.py
         │
-        └──────────────────┐
-                           ▼
-                        hei.py
-                           │
-                           ▼
-                    JSON Response
+        │
+        ▼
+      hei.py
+        │
+        ▼
+   JSON Response
 
  ## Directory Structure
 
@@ -62,13 +63,14 @@ causal-inference-platform/
 ├── app/
 │   ├── main.py          # FastAPIアプリケーション
 │   ├── api.py           # APIエンドポイント
-│   ├── services.py      # 分析パイプライン
-│   ├── schemas.py       # Pydanticモデル
+│   ├── analysis.py      # 分析パイプライン
+│   ├── dantic.py       # Pydanticモデル
 │   ├── config.py        # 各種設定
 │   └── database.py      # DB接続（拡張用）
 │
 ├── workspace/
 │   ├── segmentation.py  # セグメンテーション
+    ├── calibrated.py    # 確率較正の共通処理
 │   ├── aipw.py          # AIPW推定
 │   ├── drcdf.py         # DR-CDF推定
 │   ├── hei.py           # HEI算出
@@ -231,8 +233,21 @@ JSONレスポンス生成
 ## 研究アルゴリズム
 
 本プロジェクトでは、解釈性を重視した因果セグメンテーション手法を実装しています。
-
 分析は以下の流れで実行されます。
+
+CSV
+ ↓
+Segmentation
+ ↓
+Cross-fitting
+ ↓
+AIPW
+ ↓
+DR-CDF
+ ↓
+HEI
+
+詳細の説明は以下の通りです。
 
 1. **セグメンテーション**
    - 説明変数を基に対象をセグメントへ分類
@@ -252,7 +267,7 @@ JSONレスポンス生成
 
 ## 評価結果
 
-提案手法を既存の因果クラスタリング手法と比較しました。
+本研究では、提案手法の有効性を評価するため、既存手法である Causal Clustering と比較を行いました。同一データセット・同一評価指標（ATE、DR-CDF、HEI、SMD、ESS）を用いて性能を比較しています。
 
 評価指標
 
@@ -261,14 +276,6 @@ JSONレスポンス生成
 - Heterogeneity Evaluation Index (HEI)
 - Standardized Mean Difference (SMD)
 - Effective Sample Size (ESS)
-
-### 比較結果
-
-| 手法 | HEI | 特徴 |
-|------|----:|------|
-| 提案手法 | ○○ | 高い異質性と解釈性 |
-| Causal Clustering | ○○ | 高い異質性 |
-| Linear Model | ○○ | 異質性は小さい |
 
 ### 分析例
 
@@ -285,6 +292,40 @@ JSONレスポンス生成
 
 ![DR-CDF詳細さ](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E8%A9%B3%E7%B4%B0%E3%81%95.png)
 
+### 比較結果
+
 - HEI
+
 ![HEI](https://github.com/Ryot7m/Causal-comparison/blob/main/png/HEI.png)
+
 - セグメント境界
+
+##### 正確性
+| Segment | Treated ($n_1$) | Control ($n_0$) | Max SMD ↓ | Extreme PS Rate ↓ | ESS Ratio ↑ |
+|:-------:|----------------:|----------------:|----------:|------------------:|------------:|
+| 0 | 39 | 502 | 0.276 | 0.218 | 0.683 |
+| 1 | 84 | 257 | 0.377 | 0.012 | 0.228 |
+| 2 | 285 | 158 | 0.086 | 0.002 | 0.744 |
+
+##### 更新頻度
+| Segment | Treated ($n_1$) | Control ($n_0$) | Max SMD ↓ | Extreme PS Rate ↓ | ESS Ratio ↑ |
+|:-------:|----------------:|----------------:|----------:|------------------:|------------:|
+| 0 | 51 | 490 | 0.129 | 0.100 | 0.784 |
+| 1 | 101 | 240 | 0.065 | 0.000 | 0.937 |
+| 2 | 307 | 136 | 0.110 | 0.002 | 0.870 |
+
+##### 豊富さ
+| Segment | Treated ($n_1$) | Control ($n_0$) | Max SMD ↓ | Extreme PS Rate ↓ | ESS Ratio ↑ |
+|:-------:|----------------:|----------------:|----------:|------------------:|------------:|
+| 0 | 62 | 479 | 0.148 | 0.067 | 0.693 |
+| 1 | 134 | 207 | 0.053 | 0.000 | 0.923 |
+| 2 | 349 | 94 | 0.129 | 0.000 | 0.954 |
+
+##### 詳細さ
+| Segment | Treated ($n_1$) | Control ($n_0$) | Max SMD ↓ | Extreme PS Rate ↓ | ESS Ratio ↑ |
+|:-------:|----------------:|----------------:|----------:|------------------:|------------:|
+| 0 | 56 | 485 | 0.131 | 0.081 | 0.800 |
+| 1 | 108 | 233 | 0.072 | 0.000 | 0.948 |
+| 2 | 332 | 111 | 0.097 | 0.007 | 0.902 |
+
+提案手法は、Causal Clusteringと同等またはそれ以上の異質性を示しつつ、特徴量に基づく単純なセグメント境界を用いることで、高い解釈性を維持しています。
