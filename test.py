@@ -5,6 +5,7 @@
 
 import numpy as np
 import pandas as pd
+from dataclasses import dataclass, field
 
 # import japanize_matplotlib
 from workspace.segmentation import segmentation_rtn
@@ -16,22 +17,32 @@ from workspace.preprocess import pre_analysis
 
 data = pd.read_csv("sample.csv", encoding="shift-jis")
 
+@dataclass
+class AnalysisConfig:
+    treatment_col: str
+    outcome_col: str
+    segment_col: str
+    confounder_cols: list[str]
 
-config = {
-    "treatment_col": "広告接触",
-    "treatment_positive_value": "接触あり",
-    "outcome_col": "推奨意向",
-    "segment_col": "事前期待",
-    "confounder_cols": ["年齢", "性別", "利用頻度", "事前満足度"],
-    "outcome_levels": [1, 2, 3, 4, 5],
-    "score_values": [1, 2, 3, 4, 5],
-    "reverse_score_max": {"Q16_1": 5, "Q16_2": 5},
-    "weight_cap": 100,
-}
+    outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])
+    score_values: list[float] = field(
+        default_factory=lambda: [1, 2, 3, 4, 5]
+    )
+    reverse_score_max: dict[str, float] = field(default_factory=dict)
+    weight_cap: float = 100.0
 
-prcs = pre_analysis() 
-sgm = segmentation_rtn(data, seg_col, ftr_cols, A, X, Y)
+
+config = AnalysisConfig(
+    treatment_col="Treatment",
+    outcome_col="Outcome",
+    segment_col="except",
+    confounder_cols=["SQ1", "SQ3", "SQ8", "Q5_2"],
+    reverse_score_max={"Feature_1": 6},
+)
+
+prcs = pre_analysis(data, config) 
+sgm = segmentation_rtn(data, prcs["seg"], prcs["ftr"], A, X, Y)
 ate = aipw_ate(sgm["X0"], sgm["A0"], sgm["Y0"], sgm["seg0"], 100)
 ate_plot(sgm["A0"], sgm["Y0"], ate["score"], ate["nuis"], sgm["seg0"])
-drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], levels_sorted)
+drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], prcs["level"])
 hei_result(ate["nuis"], sgm["A0"], sgm["Y0"], sgm["S0"] ,sgm["per_seg"])
