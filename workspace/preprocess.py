@@ -19,7 +19,21 @@ def pre_analysis(data, config):
         "アウトカム変数":"Outcome"
     })
 
-    outcome_col = "Outcome" 
+    outcome_col = "Outcome"
+    for col, max_value in config.reverse_score_max.items():
+        data[col] = max_value - data[col]
+
+    required = [
+        config.treatment_col,
+        config.outcome_col,
+        config.segment_col,
+        *config.confounder_cols,
+    ]
+    data = data.dropna(subset=required).copy()
+
+    y_to_index = {
+        level: i for i, level in enumerate(config.outcome_levels)
+    }
     state_col = "Feature_1"
     score_rec = np.array([0, 1, 2, 3, 4],dtype= "float") 
 
@@ -52,5 +66,9 @@ def pre_analysis(data, config):
     return {
         "seg" : seg_col,
         "ftr" : ftr_cols,
-        "level" : levels_sorted
+        "level" : levels_sorted,
+        "X" : X,
+        "A" : A,
+        "Y" : Y,
+        "cap" : np.asarray(config.score_values)
     }

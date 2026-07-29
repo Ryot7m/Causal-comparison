@@ -29,7 +29,7 @@ class AnalysisConfig:
         default_factory=lambda: [1, 2, 3, 4, 5]
     )
     reverse_score_max: dict[str, float] = field(default_factory=dict)
-    weight_cap: float = 100.0
+    weight_cap: 100
 
 
 config = AnalysisConfig(
@@ -41,7 +41,7 @@ config = AnalysisConfig(
 )
 
 prcs = pre_analysis(data, config) 
-sgm = segmentation_rtn(data, prcs["seg"], prcs["ftr"], A, X, Y)
+sgm = segmentation_rtn(data, prcs["seg"], prcs["ftr"], prcs["A"], prcs["X"], prcs["Y"])
 ate = aipw_ate(sgm["X0"], sgm["A0"], sgm["Y0"], sgm["seg0"], 100)
 ate_plot(sgm["A0"], sgm["Y0"], ate["score"], ate["nuis"], sgm["seg0"])
 drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], prcs["level"])
