@@ -69,12 +69,12 @@ def pre_analysis(data, config):
     
     return {
         "seg" : seg_col,
-        "ftr" : ftr_cols,
         "level" : levels_sorted,
         "X" : X0,
         "A" : A0,
         "Y" : Y0,
         "S" : S0,
         "treat" : data["Treatment"],
+        "ftr" : feature_names,
         "cap" : np.asarray(config.score_values)
     }
