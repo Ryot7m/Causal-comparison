@@ -58,14 +58,23 @@ def pre_analysis(data, config):
 
     K = len(levels_sorted)
     
+    ok = ~pd.isna(S)
+    X_df0 = pd.get_dummies(data.loc[ok, ftr_cols], drop_first=False)
+    feature_names = list(X_df0.columns)
+    X0 = X_df0.values
+    
+    S0 = S[ok]
+    A0 = A[ok]
+    Y0 = Y[ok].astype(int)
+    
     return {
         "seg" : seg_col,
         "ftr" : ftr_cols,
         "level" : levels_sorted,
-        "X" : X,
-        "A" : A,
-        "Y" : Y,
-        "S" : S,
+        "X" : X0,
+        "A" : A0,
+        "Y" : Y0,
+        "S" : S0,
         "treat" : data["Treatment"],
         "cap" : np.asarray(config.score_values)
     }
