@@ -15,7 +15,7 @@ def make_calibrated_or_base(base_estimator, method, y, default_cv=3):
     min_count = counts.min()
     cv = min(default_cv, int(min_count))
     if cv >= 2: #サンプル数に応じた交差検証
-        return CalibratedClassifierCV(base_estimator, method=method, cv=default_cv)
+        return CalibratedClassifierCV(base_estimator, method=method, cv=cv)
     if len(counts) == 0:
         return base_estimator
     if cv >= 2: #サンプル数に応じた交差検証
