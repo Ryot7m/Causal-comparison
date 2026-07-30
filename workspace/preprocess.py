@@ -3,12 +3,6 @@ import numpy as np
 
 def pre_analysis(data, config):
 
-    data["Feature_1"] = 6 - data["Feature_1"]
-    # data = data.fillna(0)
-    data_filt = data.filter(regex="Q16", axis = 1)
-    data_filt = 5 - data_filt
-    data = pd.concat([data, data_filt], axis = 1)
-
     # 列名の変更(列名に応じて変更をしなくても可)
     data = data.rename(columns={
         "満足度A":"Feature_1",
@@ -60,6 +54,7 @@ def pre_analysis(data, config):
     y_to_index = {level: i for i, level in enumerate(outcome_levels)}
     Y = data["Outcome"].map(y_to_index).astype(int).to_numpy()
     # Y = pd.Series(data[outcome_col]).map(y_to_index).astype(int).values
+    S = data[seg_col].replace(0, np.nan).to_numpy()
 
     K = len(levels_sorted)
     
@@ -70,5 +65,7 @@ def pre_analysis(data, config):
         "X" : X,
         "A" : A,
         "Y" : Y,
+        "S" : S,
+        "treat" : data["Treatment"],
         "cap" : np.asarray(config.score_values)
     }

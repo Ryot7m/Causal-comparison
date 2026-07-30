@@ -41,7 +41,7 @@ config = AnalysisConfig(
 )
 
 prcs = pre_analysis(data, config) 
-sgm = segmentation_rtn(data, prcs["seg"], prcs["ftr"], prcs["A"], prcs["X"], prcs["Y"])
+sgm = segmentation_rtn(prcs["S"], prcs["seg"], prcs["ftr"], prcs["A"], prcs["X"], prcs["Y"], prcs["treat"])
 ate = aipw_ate(sgm["X0"], sgm["A0"], sgm["Y0"], sgm["seg0"], 100)
 ate_plot(sgm["A0"], sgm["Y0"], ate["score"], ate["nuis"], sgm["seg0"])
 drcdf_plot(sgm["A0"], sgm["Y0"], ate["nuis"], sgm["seg0"], prcs["level"])
