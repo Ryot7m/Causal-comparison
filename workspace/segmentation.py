@@ -234,7 +234,7 @@ def ess_class(w: np.ndarray):
     s2 = np.sum(w * w)
     return float((s1 * s1) / s2) if s2 > 0 else np.nan
 
-def segmentation_rtn(S, ftr_cols, A, X, Y, T):
+def segmentation_rtn(S, feature_names, A, X, T):
       # 0埋めしている場合は欠損扱いへ
 
     ps_kwargs_design = dict(
@@ -260,25 +260,18 @@ def segmentation_rtn(S, ftr_cols, A, X, Y, T):
     print(pd.crosstab(seg_opt, T))
 
     # --- rank_cuts_design_optimal と同じ “欠損除外” で確認 ---
-    ok = ~pd.isna(S)
-    S0 = S[ok]
-    A0 = A[ok]
-    Y0 = Y[ok].astype(int)
 
     # X は numpy なので列名が消えている。dummiesの列名を復元する
-    X_df0 = pd.get_dummies(data.loc[ok, ftr_cols], drop_first=False)
-    feature_names = list(X_df0.columns)
-    X0 = X_df0.values
 
-    seg0 = make_seg_from_cuts(S0, cut1, cut2)
+    seg0 = make_seg_from_cuts(S, cut1, cut2)
     per_seg_summary = []
     all_rows = []
 
     for g in [0, 1, 2]:
         idx_g = (seg0 == g)
         n_g = int(idx_g.sum())
-        n1 = int(((A0 == 1) & idx_g).sum())
-        n0 = int(((A0 == 0) & idx_g).sum())
+        n1 = int(((A == 1) & idx_g).sum())
+        n0 = int(((A == 0) & idx_g).sum())
         print(f"\n--- seg={g} | n={n_g} | treated={n1} | control={n0} ---")
 
         if n_g == 0 or min(n1, n0) < 2:
@@ -286,10 +279,10 @@ def segmentation_rtn(S, ftr_cols, A, X, Y, T):
             continue
         
         # 3) seg0に切る
-        e_hat = fit_ps_oof(X0[idx_g], A0[idx_g], C=0.5, calibration="isotonic", eps=1e-2)
+        e_hat = fit_ps_oof(X[idx_g], A[idx_g], C=0.5, calibration="isotonic", eps=1e-2)
         # e_hat_g_g = e_hat[idx_g]
         # 4) SMD詳細（上位表示）
-        df_smd = weighted_smd_detail(X0[idx_g], A0[idx_g], e_hat, cap_weight=None, feature_names = feature_names)
+        df_smd = weighted_smd_detail(X[idx_g], A[idx_g], e_hat, cap_weight=None, feature_names = feature_names)
         max_abs = float(df_smd["abs_smd"].iloc[0])
         mean_abs = float(df_smd["abs_smd"].mean())
         p95_abs = float(df_smd["abs_smd"].quantile(0.95))
@@ -297,7 +290,7 @@ def segmentation_rtn(S, ftr_cols, A, X, Y, T):
 
         extreme_ps_rate = float(((e_hat < 0.05) | (e_hat > 0.95)).mean())
 
-        a_g = A0[idx_g]
+        a_g = A[idx_g]
         wt = np.minimum(1.0 / e_hat[a_g == 1], 100)
         wc = np.minimum(1.0 / (1.0 - e_hat[a_g == 0]), 100)
 
@@ -343,10 +336,10 @@ def segmentation_rtn(S, ftr_cols, A, X, Y, T):
     # overall_p95_abs_SMD = float(all_smd["abs_smd"].quantile(0.95))
     
     return  {
-        "X0" : X0,
-        "A0" : A0,
-        "Y0" : Y0,
-        "S0" : S0,
+        # "X0" : X,
+        # "A0" : A,
+        # "Y0" : Y,
+        # "S0" : S,
         "seg0" : seg0,
         "per_seg" : per_seg_summary,
         "cut1" : cut1,
