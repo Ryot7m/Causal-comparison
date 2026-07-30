@@ -2,17 +2,7 @@ import pandas as pd
 import numpy as np
 
 def pre_analysis(data, config):
-
-    # 列名の変更(列名に応じて変更をしなくても可)
-    data = data.rename(columns={
-        "満足度A":"Feature_1",
-        "満足度B":"Feature_2",
-        "満足度C":"Feature_12",
-        "期待値":"except",
-        "処置":"Treatment",
-        "アウトカム変数":"Outcome"
-    })
-
+    
     for col, max_value in config.reverse_score_max.items():
         data[col] = max_value - data[col]
 
@@ -28,11 +18,11 @@ def pre_analysis(data, config):
         level: i for i, level in enumerate(config.outcome_levels)
     }
     
-    th_sh = data[config.reverse_score_max].quantile(0.75)
-    data["Treatment"] = (data[config.reverse_score_max] >= th_sh).astype(int)
+    # th_sh = data[config.reverse_score_max].quantile(0.75)
+    # data["Treatment"] = (data[config.reverse_score_max] >= th_sh).astype(int)
 
     # X = pd.get_dummies(data[ftr_cols], drop_first=False).values
-    A = data["Treatment"].astype(int).values
+    A = data[config.treatment_col].astype(int).values
 
     levels = pd.Series(data[config.treatment_col]).dropna().unique().tolist()
     levels_sorted = sorted(levels)  
@@ -65,5 +55,5 @@ def pre_analysis(data, config):
         "S" : S0,
         "treat" : A,
         "ftr" : feature_names,
-        "cap" : np.asarray(config.score_values)
+        "score" : np.asarray(config.score_values, dtype=float)
     }

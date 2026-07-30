@@ -133,7 +133,7 @@ def fit_cf_oc(X, A, Y, s_values, n_splits: int = 5, max_iter: int = 500, random_
         s_values=s_values, K=K
     )
     
-def oc_aipw_ate(A, Y, s_values, nuisance, seg, cap = 100):
+def oc_aipw_ate(A, Y, s_values, nuisance, seg, cap):
     seg = ensure_numpy(seg).astype(int)
     A = ensure_numpy(A).astype(int).ravel()
     Y = ensure_numpy(Y).astype(int).ravel()
@@ -161,8 +161,7 @@ def oc_aipw_ate(A, Y, s_values, nuisance, seg, cap = 100):
         lst.append([i, len(phi), tau, se, tau - 1.96*se, tau + 1.96*se])
     return pd.DataFrame(lst, columns = ["cls", "clsnum", "ate", "se", "95ci_low", "95ci_high"])
 
-def aipw_ate(X1, A0, Y0, seg0, cap_):
-    score = np.asarray([0, 1, 2, 3, 4])
+def aipw_ate(X1, A0, Y0, seg0, score,cap_):
 
     nuis = fit_cf_oc(X1, A0, Y0, score, n_splits=5, random_state=123)
     res_ate = oc_aipw_ate(A0, Y0, score, nuis, seg0, cap = cap_)
