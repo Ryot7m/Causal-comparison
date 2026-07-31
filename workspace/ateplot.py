@@ -47,8 +47,12 @@ def aipw_if_guard_plot(A, Y, s_values, nuis, cap, B=1000, seed=123, bins=30,
         mu0 = p0 @ s_values
 
     # IF-guard（逆重み上限制御）
-    w1 = A * np.minimum(1.0 / e, cap)
-    w0 = (1 - A) * np.minimum(1.0 / (1.0 - e), cap)
+    if cap is None:
+        w1 = A / e
+        w0 = (1 - A) / (1 - e)
+    else:
+        w1 = A * np.minimum(1.0 / e, cap)
+        w0 = (1 - A) * np.minimum(1.0 / (1.0 - e), cap)
 
     # AIPWスコア（psi）
     psi = (mu1 - mu0) + w1 * (Z - mu1) - w0 * (Z - mu0)
@@ -86,7 +90,7 @@ def aipw_if_guard_plot(A, Y, s_values, nuis, cap, B=1000, seed=123, bins=30,
         "ci_low_95": float(ci_low),
         "ci_high_95": float(ci_high),
         "B": int(B),
-        "cap": float(cap),
+        "cap": cap,
         "n": int(n),
     }
 
