@@ -24,14 +24,12 @@ def pre_analysis(data, config):
     # X = pd.get_dummies(data[ftr_cols], drop_first=False).values
     A = data[config.treatment_col].astype(int).values
 
-    levels = pd.Series(data[config.treatment_col]).dropna().unique().tolist()
+    levels = pd.Series(data[config.outcome_col]).dropna().unique().tolist()
     levels_sorted = sorted(levels)  
     # y_to_index = {lev:i for i, lev in enumerate(levels_sorted)}
 
-    outcome_levels = [1, 2, 3, 4, 5]  # 必ず意味上の順序で指定
-
-    y_to_index = {level: i for i, level in enumerate(outcome_levels)}
-    Y = data["Outcome"].map(y_to_index).astype(int).to_numpy()
+    y_to_index = {level: i for i, level in enumerate(config.outcome_levels)}
+    Y = data[config.outcome_col].map(y_to_index).astype(int).to_numpy()
     # Y = pd.Series(data[outcome_col]).map(y_to_index).astype(int).values
     S = data[config.segment_col].replace(0, np.nan).to_numpy()
 
