@@ -234,19 +234,18 @@ def ess_class(w: np.ndarray):
     s2 = np.sum(w * w)
     return float((s1 * s1) / s2) if s2 > 0 else np.nan
 
-def segmentation_rtn(S, feature_names, A, X, treat):
+def segmentation_rtn(S, feature_names, A, X, config):
       # 0埋めしている場合は欠損扱いへ
 
     ps_kwargs_design = dict(
         C=0.5,               # 小さめほど正則化が強い（極端PSを抑えやすい）
         calibration= "isotonic",
     )
-    cap_weight_design = 100
 
     rank_design = rank_cuts_design_optimal(
         S=S, A=A, X=X,
         min_total_per_seg=200, min_each_treat_per_seg=10,
-        cap_weight=cap_weight_design,
+        cap_weight=config.weight_cap,
         ps_kwargs=ps_kwargs_design
     )
 
@@ -257,7 +256,7 @@ def segmentation_rtn(S, feature_names, A, X, treat):
     seg_opt = make_seg_from_cuts(S, cut1, cut2)
     print("best cuts:", cut1, cut2)
     print("seg info:", best["seg_info"])
-    print(pd.crosstab(seg_opt, treat))
+    print(pd.crosstab(seg_opt, A))
 
     # --- rank_cuts_design_optimal と同じ “欠損除外” で確認 ---
 

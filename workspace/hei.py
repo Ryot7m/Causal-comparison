@@ -33,12 +33,11 @@ def calculate_normalized_hei(pseudo_outcomes, predicted_scores, per_seg_summary)
 
     return heterogeneity / smd_penalty
 
-def hei_result(nuis, A0, Y0, S0 ,per_seg_summary):
+def hei_result(nuis, A0, Y0, S0 , per_seg_summary, score_arr):
     # =========================================================
     # pseudo_outcomes の定義（関数の外で再計算）
     # =========================================================
     # 観測されたアウトカムをスコア（0〜4）に変換
-    score_arr = np.asarray([0, 1, 2, 3, 4], dtype=float)
     Z0 = score_arr[Y0]
 
     # nuis(辞書)から予測値を取り出し、極端な傾向スコアをクリップ
@@ -72,39 +71,3 @@ def hei_result(nuis, A0, Y0, S0 ,per_seg_summary):
 
     print("==== Heterogeneity Score (Evaluation of Segmentation Quality) ====")
     print(heterogeneity_results.to_string(index=False))
-
-    # HEIスコア（例）
-    hei_proposed = [2.374609039743838, 5.471208523395044, 4.0615359970285985, 4.325312698877328]
-    hei_rf = [3.1007619303123373, 3.1530651964461756, 2.296957473061643, 2.3988665311251305]
-
-    # 平均値と標準偏差（エラーバー用）の計算
-    means = [np.mean(hei_proposed), np.mean(hei_rf)]
-    stds = [np.std(hei_proposed, ddof=1), np.std(hei_rf, ddof=1)]
-
-    labels = ['Proposed Method\n(-S0)', 'Causal Clustering\n(Random Forest)']
-    x = np.arange(len(labels))
-
-    plt.figure(figsize=(7, 6))
-
-    # 1. 平均値の棒グラフを描画
-    bars = plt.bar(x, means, yerr=stds, capsize=10, 
-                color=['#ff9999', '#9999ff'], alpha=0.8, edgecolor='black', linewidth=1.2)
-
-    # 2. 各Foldの実際のスコアを「ドット」として重ねて描画（これが論文で信頼される書き方です）
-    # ドットが重ならないようにX軸方向に少しだけ散らします（ジッター）
-    jitter_proposed = np.random.normal(0, 0.04, size=len(hei_proposed))
-    jitter_rf = np.random.normal(1, 0.04, size=len(hei_rf))
-
-    plt.scatter(jitter_proposed, hei_proposed, color='darkred', zorder=3, alpha=0.9, label='Each Fold Score')
-    plt.scatter(jitter_rf, hei_rf, color='darkblue', zorder=3, alpha=0.9)
-
-    # 3. 装飾
-    plt.ylabel('Normalized Heterogeneity Score (HEI)', fontsize=12)
-    plt.title('Comparison of Segmentation Quality (HEI)', fontsize=14)
-    plt.xticks(x, labels, fontsize=12)
-    plt.grid(axis='y', linestyle='--', alpha=0.5)
-    plt.legend(loc='lower right')
-
-    # グラフの余白を自動調整
-    plt.tight_layout()
-    plt.show()
