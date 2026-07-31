@@ -29,6 +29,7 @@ class AnalysisConfig:
         default_factory=lambda: [1, 2, 3, 4, 5]
     )
     reverse_score_max: dict[str, float] = field(default_factory=dict)
+    segment_missing_values: tuple = ()
     weight_cap: float = 100.0
 
 

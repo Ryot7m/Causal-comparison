@@ -24,14 +24,33 @@ def pre_analysis(data, config):
     # X = pd.get_dummies(data[ftr_cols], drop_first=False).values
     A = data[config.treatment_col].astype(int).values
 
-    levels = pd.Series(data[config.outcome_col]).dropna().unique().tolist()
+    levels_all = list(config.outcome_levels)
+    score_all = np.asarray(config.score_values, dtype=float)
+
+    if len(levels_all) != len(score_all):
+        raise ValueError("outcome_levels と score_values の長さが一致していません。")
+
+    observe_set = set(data[config.outcome_col].dropna())
+    nothing = observe_set - set(levels_all)
+    if nothing:
+        raise ValueError(f"outcome_levels にない値があります: {sorted(nothing)}")
+
+    keep = [i for i, level in enumerate(levels_all) if level in observe_set]
+    levels = [levels_all[i] for i in keep]
+    score = score_all[keep]
+
+    if len(levels) < 2:
+        raise ValueError("分析には少なくとも2つのアウトカムが必要です。")
+
+    y_to_index = {level: i for i, level in enumerate(levels)}
+    Y = data[config.outcome_col].map(y_to_index).to_numpy()
     levels_sorted = sorted(levels)  
     # y_to_index = {lev:i for i, lev in enumerate(levels_sorted)}
 
     y_to_index = {level: i for i, level in enumerate(config.outcome_levels)}
     Y = data[config.outcome_col].map(y_to_index).astype(int).to_numpy()
     # Y = pd.Series(data[outcome_col]).map(y_to_index).astype(int).values
-    S = data[config.segment_col].replace(0, np.nan).to_numpy()
+    S = data[config.segment_col].replace(list(config.segment_missing_values), np.nan).to_numpy()
 
     # K = len(levels_sorted)
     
@@ -46,12 +65,12 @@ def pre_analysis(data, config):
     
     return {
         "seg" : config.segment_col,
-        "level" : levels_sorted,
+        "level" : levels,
         "X" : X0,
         "A" : A0,
         "Y" : Y0,
         "S" : S0,
         "treat" : A,
         "ftr" : feature_names,
-        "score" : np.asarray(config.score_values, dtype=float)
+        "score" : score
     }
