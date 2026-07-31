@@ -16,7 +16,7 @@ def _subset_nuis(nuis, idx):
     return out
 
 plt.rcParams['font.size'] = 24
-def aipw_if_guard_plot(A, Y, s_values, nuis, cap=100, B=1000, seed=123, bins=30,
+def aipw_if_guard_plot(A, Y, s_values, nuis, cap, B=1000, seed=123, bins=30,
                        title=None, save_path=None):
     """
     aipw_if_guard と同じタイプの図（ブート分布 + 95%CI縦線）を1回描く。
@@ -90,7 +90,7 @@ def aipw_if_guard_plot(A, Y, s_values, nuis, cap=100, B=1000, seed=123, bins=30,
         "n": int(n),
     }
 
-def plot_if_guard_seg(A, Y, s_values, nuis, seg, cap=100, B=1000, seed=123, bins=30,
+def plot_if_guard_seg(A, Y, s_values, nuis, seg, cap, B=1000, seed=123, bins=30,
                          exclude_segs=(-1,), save_dir=None):
     """
     segごとに aipw_if_guard_plot を回して図を出す。
@@ -128,8 +128,8 @@ def plot_if_guard_seg(A, Y, s_values, nuis, seg, cap=100, B=1000, seed=123, bins
     return pd.DataFrame(results).sort_values("seg").reset_index(drop=True)
 
 
-def ate_plot(A0, Y0, score, nuis, seg0):
+def ate_plot(A0, Y0, score, nuis, seg0, cap):
     res_if_seg = plot_if_guard_seg(
         A0, Y0, score, nuis, seg0,
-        cap=100, B=1000, seed=123, bins=30
+        cap, B=1000, seed=123, bins=30
 )

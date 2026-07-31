@@ -43,6 +43,6 @@ config = AnalysisConfig(
 prcs = pre_analysis(data, config) 
 sgm = segmentation_rtn(prcs["S"], prcs["ftr"], prcs["A"], prcs["X"], config.weight_cap)
 ate = aipw_ate(prcs["X"], prcs["A"], prcs["Y"], sgm["seg0"], prcs["score"], config.weight_cap)
-ate_plot(prcs["A"], prcs["Y"], ate["score"], ate["nuis"], sgm["seg0"])
+ate_plot(prcs["A"], prcs["Y"], ate["score"], ate["nuis"], sgm["seg0"], config.weight_cap)
 drcdf_plot(prcs["A"], prcs["Y"], ate["nuis"], sgm["seg0"], prcs["level"])
 hei_result(ate["nuis"], prcs["A"], prcs["Y"], prcs["S"] ,sgm["per_seg"], prcs["score"])
