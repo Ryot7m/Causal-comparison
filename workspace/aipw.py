@@ -95,19 +95,16 @@ def fit_cf_oc(X, A, Y, s_values, n_splits: int = 5, max_iter: int = 500, random_
     ])
     outcome_calibration = "isotonic"
     
-    strata = np.array([
-    f"{a}_{y}" for a, y in zip(A, Y)
-])
 
-    # _, counts = np.unique(strata, return_counts=True)
-    # k = min(n_splits, int(counts.min()))
+    _, counts = np.unique(A, return_counts=True)
+    k = min(n_splits, int(counts.min()))
 
-    # if k < 2:
-    #     raise ValueError("アウトカムが少ないため、cross-fittingできません")
+    if k < 2:
+        raise ValueError("アウトカムが少ないため、cross-fittingできません")
     
     # クロスバリデーション
-    kf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=random_state,)
-    for fold_id, (tr, va) in enumerate(kf.split(X, strata)):
+    kf = StratifiedKFold(n_splits=k, shuffle=True, random_state=random_state,)
+    for fold_id, (tr, va) in enumerate(kf.split(X, A)):
         folds[va] = fold_id
         X_tr, X_va = X[tr], X[va]
         A_tr, A_va = A[tr], A[va]
