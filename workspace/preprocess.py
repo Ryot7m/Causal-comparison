@@ -6,6 +6,12 @@ def pre_analysis(data_, config):
     
     for col, max_value in config.reverse_score_max.items():
         data[col] = max_value - data[col]
+        
+    source = data[config.state_col]
+    th_sh = source.quantile(config.threshold)
+
+    # 欠損値を対照群(0)に誤分類しない
+    data[config.treatment_col] = (source >= th_sh).where(source.notna())
 
     required = [
         config.treatment_col,
