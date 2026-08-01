@@ -15,8 +15,7 @@ from workspace.drcdf import drcdf_plot
 from workspace.hei import hei_result 
 from workspace.preprocess import pre_analysis
 
-# data = pd.read_csv("sample.csv", encoding="shift-jis")
-data = pd.read_csv("7-4-18_data_new.csv", encoding="shift-jis")
+data = pd.read_csv("sample.csv", encoding="shift-jis")
 
 @dataclass
 class AnalysisConfig:
@@ -26,7 +25,6 @@ class AnalysisConfig:
     confounder_cols: list[str] | None = None
     state_col: str | None = None
     threshold: float | None = None
-    exclude_cols: list[str] = field(default_factory=list)
 
     outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])
     score_values: list[float] = field(
@@ -45,7 +43,6 @@ config = AnalysisConfig(
     threshold=0.25,
     confounder_cols=None,
     reverse_score_max={"Q4_1": 6},
-    exclude_cols=[]
 )
 
 prcs = pre_analysis(data, config) 
