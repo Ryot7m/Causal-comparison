@@ -251,13 +251,13 @@ def segmentation_rtn(S, feature_names, A, X, config):
 
     print(rank_design.head(10))
 
-    best = rank_design.iloc[0]
-    
     if rank_design.empty:
-        raise ValueError(
-            "条件を満たす3セグメントを作れません。"
-            "サンプル数・各群の最小人数・セグメント変数を見直してください。")
-    
+            raise ValueError(
+                "条件を満たす3セグメントを作れません。"
+                "サンプル数・各群の最小人数・セグメント変数を見直してください。")
+        
+    best = rank_design.iloc[0]
+
     cut1, cut2 = best["cut1"], best["cut2"]
     seg_opt = make_seg_from_cuts(S, cut1, cut2)
     print("best cuts:", cut1, cut2)

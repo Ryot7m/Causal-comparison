@@ -1,7 +1,8 @@
 import pandas as pd
 import numpy as np
 
-def pre_analysis(data, config):
+def pre_analysis(data_, config):
+    data = data_.copy()
     
     for col, max_value in config.reverse_score_max.items():
         data[col] = max_value - data[col]
@@ -41,11 +42,6 @@ def pre_analysis(data, config):
 
     if len(levels) < 2:
         raise ValueError("分析には少なくとも2つのアウトカムが必要です。")
-
-    y_to_index = {level: i for i, level in enumerate(levels)}
-    Y = data[config.outcome_col].map(y_to_index).to_numpy()
-    levels_sorted = sorted(levels)  
-    # y_to_index = {lev:i for i, lev in enumerate(levels_sorted)}
 
     y_to_index = {level: i for i, level in enumerate(config.outcome_levels)}
     Y = data[config.outcome_col].map(y_to_index).astype(int).to_numpy()
