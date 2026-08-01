@@ -22,7 +22,9 @@ class AnalysisConfig:
     treatment_col: str
     outcome_col: str
     segment_col: str
-    confounder_cols: list[str]
+    confounder_cols: list[str] | None = None
+    state_col: str | None = None
+    threshold: float | None = None
 
     outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])
     score_values: list[float] = field(
@@ -35,10 +37,12 @@ class AnalysisConfig:
 
 config = AnalysisConfig(
     treatment_col="Treatment",
-    outcome_col="Outcome",
-    segment_col="except",
-    confounder_cols=["SQ1", "SQ3", "SQ8", "Q5_2"],
-    reverse_score_max={"Feature_1": 6},
+    outcome_col="Q4_1",
+    segment_col="Q7_4",
+    state_col="Q2_9",
+    threshold=0.25,
+    confounder_cols=None,
+    reverse_score_max={"Q4_1": 6},
 )
 
 prcs = pre_analysis(data, config) 
