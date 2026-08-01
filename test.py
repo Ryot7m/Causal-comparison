@@ -25,6 +25,8 @@ class AnalysisConfig:
     confounder_cols: list[str] | None = None
     state_col: str | None = None
     threshold: float | None = None
+    exclude_cols: list[str] = field(default_factory=list)
+
 
     outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])
     score_values: list[float] = field(
@@ -43,6 +45,7 @@ config = AnalysisConfig(
     threshold=0.25,
     confounder_cols=None,
     reverse_score_max={"Q4_1": 6},
+    exclude_cols=[]
 )
 
 prcs = pre_analysis(data, config) 
