@@ -12,12 +12,27 @@ def pre_analysis(data_, config):
 
     # 欠損値を対照群(0)に誤分類しない
     data[config.treatment_col] = (source >= th_sh).where(source.notna())
+    
+    if config.confounder_cols is None:
+        other = {
+            config.treatment_col,
+            config.outcome_col,
+            config.segment_col,
+            *config.exclude_cols,
+        }
+
+        if config.treatment_source_col is not None:
+            other.add(config.state_col)
+
+        confounder = [
+            col for col in data.columns
+            if col not in other]
 
     required = [
         config.treatment_col,
         config.outcome_col,
         config.segment_col,
-        *config.confounder_cols,
+        *confounder,
     ]
     data = data.dropna(subset=required).copy()
 
