@@ -244,7 +244,7 @@ def segmentation_rtn(S, feature_names, A, X, config):
 
     rank_design = rank_cuts_design_optimal(
         S=S, A=A, X=X,
-        min_total_per_seg=200, min_each_treat_per_seg=10,
+        min_total_per_seg=100, min_each_treat_per_seg=10,
         cap_weight=config.weight_cap,
         ps_kwargs=ps_kwargs_design
     )

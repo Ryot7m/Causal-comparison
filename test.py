@@ -16,7 +16,6 @@ from workspace.hei import hei_result
 from workspace.preprocess import pre_analysis
 
 data = pd.read_csv("sample.csv", encoding="shift-jis")
-
 @dataclass
 class AnalysisConfig:
     treatment_col: str
@@ -26,6 +25,7 @@ class AnalysisConfig:
     state_col: str | None = None
     threshold: float | None = None
     exclude_cols: list[str] = field(default_factory=list)
+    treatment_source_col: str | None = None
 
 
     outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])

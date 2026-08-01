@@ -72,7 +72,7 @@ def pre_analysis(data_, config):
     # K = len(levels_sorted)
     
     ok = ~pd.isna(S)
-    X_df0 = pd.get_dummies(data.loc[ok, config.confounder_cols], drop_first=False)
+    X_df0 = pd.get_dummies(data.loc[ok, confounder], drop_first=False)
     feature_names = list(X_df0.columns)
     X0 = X_df0.values
     
