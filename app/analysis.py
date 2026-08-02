@@ -99,20 +99,22 @@ def create_response(result):
 
         },
 
-        "ate": result["ate"]["res"],
+        "ate": result["ate"]["res"].to_dict(orient = "records"),
 
-        "drcdf": result["drcdf"],
+        "drcdf": result["drcdf"].to_dict(orient = "records"),
 
-        "hei": result["hei"]
+        "hei": {
+            "score" : result["hei"]
+        }
     }
     
 async def estimate_service(file: UploadFile):
 
     data = await load_csv(file)
-
-    validate_data(data)
-
+    
     prep = config_name()
+
+    validate_data(data, prep)
     
     result = estimate(data, prep)
 
