@@ -167,7 +167,7 @@ def oc_aipw_ate(A, Y, s_values, nuisance, seg, cap):
         phi = score[id] - tau # 影響関数
         se  = float(np.sqrt(np.mean(phi**2)/len(phi)))
         lst.append([i, len(phi), tau, se, tau - 1.96*se, tau + 1.96*se])
-    return pd.DataFrame(lst, columns = ["cls", "clsnum", "ate", "se", "95ci_low", "95ci_high"])
+    return pd.DataFrame(lst, columns = ["cls", "clsnum", "ate", "se", "ci_low", "ci_high"])
 
 def aipw_ate(X1, A0, Y0, seg0, score,cap_):
 

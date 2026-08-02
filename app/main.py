@@ -20,13 +20,13 @@ app = FastAPI(
 
 app.include_router(router)
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
-
 @app.on_event("startup")
 async def startup_message():
     print("=" * 50)
     print("API started successfully!")
     print("Swagger UI: http://localhost:8080/docs")
     print("=" * 50)
+
+@app.get("/health")
+def health():
+    return {"status": "ok"}
