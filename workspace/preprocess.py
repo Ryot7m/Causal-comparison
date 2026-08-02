@@ -104,7 +104,7 @@ def pre_analysis(data_, config):
     if len(levels) < 2:
         raise ValueError("分析には少なくとも2つのアウトカムが必要です。")
 
-    y_to_index = {level: i for i, level in enumerate(config.outcome_levels)}
+    y_to_index = {level: i for i, level in enumerate(levels)}
     Y = data[config.outcome_col].map(y_to_index).astype(int).to_numpy()
     # Y = pd.Series(data[outcome_col]).map(y_to_index).astype(int).values
     S = data[config.segment_col].replace(list(config.segment_missing_values), np.nan).to_numpy()
