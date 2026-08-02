@@ -18,6 +18,7 @@ def pre_analysis(data_, config):
             config.treatment_col,
             config.outcome_col,
             config.segment_col,
+            config.state_col,
             *config.exclude_cols,
         }
 
@@ -27,6 +28,35 @@ def pre_analysis(data_, config):
         confounder = [
             col for col in data.columns
             if col not in other]
+        
+    if config.missing_type == "zero":
+    # Noneなら全共変量を0埋め
+        if config.zero_fill is None:
+            fill_cols = list(confounder)
+        else:
+            fill_cols = list(config.zero_fill)
+
+        unknown = set(fill_cols) - set(data.columns)
+        if unknown:
+            raise ValueError(
+                f"0埋め対象に存在しない列があります: {sorted(unknown)}"
+            )
+
+        # 0埋めしない変数の設定（処置・アウトカム・セグメント）
+        omit = {
+            config.treatment_col,
+            config.outcome_col,
+            config.segment_col,
+            config.state_col,
+        }
+        fill_cols = [col for col in fill_cols if col not in omit]
+
+        data[fill_cols] = data[fill_cols].fillna(0)
+
+    elif config.missing_type != "drop":
+        raise ValueError(
+            "missing_strategy は 'drop' または 'zero' を指定してください。"
+        )
 
     required = [
         config.treatment_col,

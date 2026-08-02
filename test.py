@@ -14,8 +14,11 @@ from workspace.ateplot import ate_plot
 from workspace.drcdf import drcdf_plot
 from workspace.hei import hei_result 
 from workspace.preprocess import pre_analysis
+from typing import Literal
 
-data = pd.read_csv("sample.csv", encoding="shift-jis")
+# data = pd.read_csv("sample.csv", encoding="shift-jis")
+data = pd.read_csv("7-4-18_data_app.csv", encoding="shift-jis")
+
 @dataclass
 class AnalysisConfig:
     treatment_col: str
@@ -27,6 +30,9 @@ class AnalysisConfig:
     exclude_cols: list[str] = field(default_factory=list)
     treatment_source_col: str | None = None
 
+    #欠損処理の選択
+    missing_type: Literal["drop", "zero"] = "zero"
+    zero_fill: list[str] | None = None
 
     outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])
     score_values: list[float] = field(
@@ -42,7 +48,7 @@ config = AnalysisConfig(
     outcome_col="Q4_1",
     segment_col="Q7_4",
     state_col="Q2_9",
-    threshold=0.25,
+    threshold=0.75,
     confounder_cols=None,
     reverse_score_max={"Q4_1": 6},
     exclude_cols=[]
