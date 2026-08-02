@@ -76,7 +76,7 @@ def oc_dr_cdf_by_seg(A, Y, nuis, seg, cap=None, level_labels=None):
             rows.append({
                 "seg": int(g),
                 "c": int(c),
-                # "threshold": th[c],
+                "threshold": th[c],
                 # "n": n_g,
                 # "n_treat1": n1,
                 # "n_treat0": n0,
