@@ -15,6 +15,7 @@ class AteResult(BaseModel):
 class DrcdfResult(BaseModel):
     seg: int
     c: int
+    threshold: float
     F1_dr: float
     F0_dr: float
     tau_c: float

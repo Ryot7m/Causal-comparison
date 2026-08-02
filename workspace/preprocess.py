@@ -29,6 +29,8 @@ def pre_analysis(data_, config):
         confounder = [
             col for col in data.columns
             if col not in other]
+    else:
+        confounder = list(config.confounder_cols)
         
     confounder = [
     col for col in confounder
