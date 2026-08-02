@@ -76,10 +76,10 @@ def oc_dr_cdf_by_seg(A, Y, nuis, seg, cap=None, level_labels=None):
             rows.append({
                 "seg": int(g),
                 "c": int(c),
-                "threshold": th[c],
-                "n": n_g,
-                "n_treat1": n1,
-                "n_treat0": n0,
+                # "threshold": th[c],
+                # "n": n_g,
+                # "n_treat1": n1,
+                # "n_treat0": n0,
                 "F1_dr": float(F1g),
                 "F0_dr": float(F0g),
                 "tau_c": tau,
@@ -100,7 +100,7 @@ def drcdf_plot(A0, Y0, nuis, seg0, levels):
         level_labels=levels
     )
 
-    print(cdf_seg.iloc[:, [0,1,6,7,10,11]]) #必要なデータのみ抽出
+    print(cdf_seg) #必要なデータのみ抽出
 
     for g in sorted(cdf_seg["seg"].unique()):
         d = cdf_seg[cdf_seg["seg"] == g].sort_values("c")
@@ -125,3 +125,5 @@ def drcdf_plot(A0, Y0, nuis, seg0, levels):
         # plt.title(f"DR-CDF (seg={g})")
         plt.legend()
         plt.show()
+        
+    return cdf_seg

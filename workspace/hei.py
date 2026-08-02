@@ -77,4 +77,5 @@ def hei_result(nuis, A0, Y0, S0 , per_seg_summary, score_arr):
     /sum(row["n"] for row in per_seg_summary)
     )
     score_proposed /= smd_num
-    print(score_proposed)
+    
+    return score_proposed
