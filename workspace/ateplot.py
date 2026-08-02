@@ -84,6 +84,7 @@ def aipw_if_guard_plot(A, Y, s_values, nuis, cap, B=1000, seed=123, bins=30,
     if save_path is not None:
         plt.savefig(save_path, dpi=200)
     plt.show()
+    plt.close()
 
     return {
         "ate": tau,
