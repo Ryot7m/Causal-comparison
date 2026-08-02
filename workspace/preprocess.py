@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from fnmatch import fnmatch
 
 def pre_analysis(data_, config):
     data = data_.copy()
@@ -28,6 +29,13 @@ def pre_analysis(data_, config):
         confounder = [
             col for col in data.columns
             if col not in other]
+        
+    confounder = [
+    col for col in confounder
+    if not any(
+        fnmatch(col, pattern)
+        for pattern in config.exclude_conditions
+    )]
         
     if config.missing_type == "zero":
     # Noneなら全共変量を0埋め

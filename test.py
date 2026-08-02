@@ -28,6 +28,7 @@ class AnalysisConfig:
     state_col: str | None = None
     threshold: float | None = None
     exclude_cols: list[str] = field(default_factory=list)
+    exclude_conditions: list[str] = field(default_factory=list)
     treatment_source_col: str | None = None
 
     #欠損処理の選択
@@ -51,6 +52,7 @@ config = AnalysisConfig(
     threshold=0.75,
     confounder_cols=None,
     reverse_score_max={"Q4_1": 6},
+    exclude_conditions=["Q2_*"],
     exclude_cols=[]
 )
 
