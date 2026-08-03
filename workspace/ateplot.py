@@ -72,19 +72,23 @@ def aipw_if_guard_plot(A, Y, s_values, nuis, cap, B=1000, seed=123, bins=30,
     ci_low, ci_high = np.percentile(boots, [2.5, 97.5])
 
     # 描画
-    plt.figure(figsize=(6.4, 4.8))
-    plt.hist(boots, bins=bins, density=True)
-    plt.axvline(ci_low, color="green")
-    plt.axvline(tau, color="red")
-    plt.axvline(ci_high, color="orange")
-    plt.xlabel("ATE")
-    plt.ylabel("density")
-    plt.title(title or f"ATEと95%信頼区間(IF-guard cap={cap}, B={B})")
-    plt.tight_layout()
+    fig, ax = plt.subplots(figsize=(6.4, 4.8))
+
+    ax.hist(boots, bins=bins, density=True)
+    ax.axvline(ci_low, color="green")
+    ax.axvline(tau, color="red")
+    ax.axvline(ci_high, color="orange")
+
+    ax.set_xlabel("ATE")
+    ax.set_ylabel("Density")
+    ax.set_title(title or f"ATE and 95% CI (cap={cap}, B={B})")
+
+    fig.tight_layout()
+
     if save_path is not None:
-        plt.savefig(save_path, dpi=200)
-    plt.show()
-    plt.close()
+        fig.savefig(save_path, dpi=200)
+
+    plt.close(fig)
 
     return {
         "ate": tau,

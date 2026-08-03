@@ -91,7 +91,7 @@ def fit_cf_oc(X, A, Y, s_values, n_splits: int = 5, max_iter: int = 500, random_
     # 多クラスロジット＋順序一貫な確率分布による形状制約モデルの設定
     base_mn = Pipeline([
         ("scaler", StandardScaler(with_mean=True, with_std=True)),
-        ("clf", LogisticRegression(max_iter=1500, multi_class="multinomial", solver="lbfgs"))
+        ("clf", LogisticRegression(max_iter=1500, solver="lbfgs"))
     ])
     outcome_calibration = "isotonic"
     

@@ -11,13 +11,13 @@ from dataclasses import dataclass, field
 from workspace.segmentation import segmentation_rtn
 from workspace.aipw import aipw_ate
 from workspace.ateplot import ate_plot
-from workspace.drcdf import drcdf_plot
+from workspace.drcdf import oc_dr_cdf_by_seg
+from workspace.drcdfplot import drcdf_plot
 from workspace.hei import hei_result 
 from workspace.preprocess import pre_analysis
 from typing import Literal
 
-# data = pd.read_csv("sample.csv", encoding="shift-jis")
-data = pd.read_csv("7-4-18_data_app.csv", encoding="shift-jis")
+data = pd.read_csv("sample.csv", encoding="shift-jis")
 
 @dataclass
 class AnalysisConfig:
@@ -60,5 +60,6 @@ prcs = pre_analysis(data, config)
 sgm = segmentation_rtn(prcs["S"], prcs["ftr"], prcs["A"], prcs["X"], config)
 ate = aipw_ate(prcs["X"], prcs["A"], prcs["Y"], sgm["seg0"], prcs["score"], config.weight_cap)
 ate_plot(prcs["A"], prcs["Y"], ate["score"], ate["nuis"], sgm["seg0"], config.weight_cap)
-drcdf_plot(prcs["A"], prcs["Y"], ate["nuis"], sgm["seg0"], prcs["level"])
-hei_result(ate["nuis"], prcs["A"], prcs["Y"], prcs["S"] ,sgm["per_seg"], prcs["score"])
+dr_cdf = oc_dr_cdf_by_seg(prcs["A"], prcs["Y"], ate["nuis"], sgm["seg0"], None, prcs["level"])
+drcdf_plot(cdf_seg=dr_cdf, output_dir="png/drcdf", show=True)
+hei = hei_result(ate["nuis"], prcs["A"], prcs["Y"], prcs["S"] ,sgm["per_seg"], prcs["score"])
