@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from pathlib import Path
 
 def _subset_nuis(nuis, idx):
     """nuis(dict) のうち、先頭次元がnの配列だけ idx で切る"""
@@ -108,21 +109,35 @@ def plot_if_guard_seg(A, Y, s_values, nuis, seg, cap, B=1000, seed=123, bins=30,
     Y = np.asarray(Y).ravel()
     seg = np.asarray(seg).ravel()
 
+    if save_dir is not None:
+        save_dir = Path(save_dir)
+        save_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
     uniq = np.unique(seg)
     uniq = [g for g in uniq if g not in exclude_segs]
 
     results = []
+
     for j, g in enumerate(uniq):
-        idx = (seg == g)
+        idx = seg == g
+
         if idx.sum() == 0:
             continue
 
         nuis_g = _subset_nuis(nuis, idx)
 
-        title = f"ATEと95%信頼区間 正確性 クラス{int(g)}"
+        title = f"ATEと95%信頼区間 クラス{int(g)}"
+
         save_path = None
+
         if save_dir is not None:
-            save_path = f"{save_dir}/if_guard_seg{int(g)}.png"
+            save_path = (
+                save_dir
+                / f"if_guard_seg{int(g)}.png"
+            )
 
         out = aipw_if_guard_plot(
             A[idx], Y[idx], s_values, nuis_g,
@@ -134,12 +149,12 @@ def plot_if_guard_seg(A, Y, s_values, nuis, seg, cap, B=1000, seed=123, bins=30,
         out["n_control"] = int(np.sum(A[idx] == 0))
         results.append(out)
 
-    return pd.DataFrame(results).sort_values("seg").reset_index(drop=True)
+    return (pd.DataFrame(results).sort_values("seg").reset_index(drop=True))
 
 
-def ate_plot(A0, Y0, score, nuis, seg0, cap, path):
+def ate_plot(A0, Y0, score, nuis, seg0, cap, save_dir):
     res_if_seg = plot_if_guard_seg(A0, Y0, score, nuis, seg0, cap, 
                                    B=1000, seed=123, bins=30, 
-                                   exclude_segs=(-1,), path = path)
+                                   exclude_segs=(-1,), save_dir= save_dir)
     
     return res_if_seg
