@@ -137,8 +137,9 @@ def plot_if_guard_seg(A, Y, s_values, nuis, seg, cap, B=1000, seed=123, bins=30,
     return pd.DataFrame(results).sort_values("seg").reset_index(drop=True)
 
 
-def ate_plot(A0, Y0, score, nuis, seg0, cap):
-    res_if_seg = plot_if_guard_seg(
-        A0, Y0, score, nuis, seg0,
-        cap, B=1000, seed=123, bins=30
-)
+def ate_plot(A0, Y0, score, nuis, seg0, cap, path):
+    res_if_seg = plot_if_guard_seg(A0, Y0, score, nuis, seg0, cap, 
+                                   B=1000, seed=123, bins=30, 
+                                   exclude_segs=(-1,), path = path)
+    
+    return res_if_seg
