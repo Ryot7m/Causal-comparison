@@ -1,7 +1,10 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import japanize_matplotlib
 from pathlib import Path
+
+japanize_matplotlib.japanize()
 
 def _subset_nuis(nuis, idx):
     """nuis(dict) のうち、先頭次元がnの配列だけ idx で切る"""
