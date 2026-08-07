@@ -7,4 +7,5 @@ pandas
 numpy
 scikit-learn
 matplotlib
+setuptools==83.0.0
 japanize-matplotlib==1.1.3
