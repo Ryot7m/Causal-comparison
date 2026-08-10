@@ -15,6 +15,20 @@ CSVをアップロードすると
 
 本プロジェクトは、前処理、推定、レスポンス生成までを一連の分析パイプラインとして構築しています。
 
+## クイックスタート
+
+### Dockerを使用する場合
+
+```bash
+git clone https://github.com/Ryot7m/Causal-comparison.git
+cd Causal-comparison
+docker compose up --build
+
+起動後にこちらのURLからアクセスしてください
+
+- Swagger UI: http://localhost:8080/docs
+- Health Check: http://localhost:8080/health
+
 ## この分析で確認できること
 
 - 一定の因果識別仮定のもとで推定された施策効果
@@ -175,6 +189,14 @@ multipart/form-data
 | 400 | 入力データに必要な列が存在しないなどの入力エラー |
 | 500 | サーバ内部で予期しないエラーが発生 |
 
+## テスト
+
+通常のテストを実行します。
+
+```bash
+python -m pytest
+```
+
 ## 推定フロー
 
 本システムでは、CSVデータを入力として受け取り、前処理から因果効果推定までを一連のパイプラインとして実行します。
@@ -251,7 +273,9 @@ JSONレスポンス生成
 - **scikit-learn**：特徴量変換・学習処理
 - **AIPW / DR-CDF**：因果効果・分布効果の推定
 - **Docker**：実行環境のコンテナ化
-- **GitHub Actions**：テストの自動実行（予定）
+```md
+- **pytest / pytest-cov**：単体テスト・統合テスト・カバレッジ計測
+- **GitHub Actions**：pushおよびpull request時の自動テスト
 
 ## 研究アルゴリズム
 
