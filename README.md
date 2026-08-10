@@ -9,16 +9,32 @@ CSVをアップロードすると
 - DR-CDFによるアウトカム分布への効果推定
 - HEIによるセグメント間の異質性評価
 
-を分析結果はJSON形式で取得でき、Swagger UIからAPIを実行します。
+これらの評価を確認できます。
+
+分析結果はJSON形式で返され、Swagger UIからCSVファイルをアップロードしてAPIを実行できます。
 
 本プロジェクトは、前処理、推定、レスポンス生成までを一連の分析パイプラインとして構築しています。
 
-## この分析で分かること
+## クイックスタート
 
-- どの施策が最も効果的か
-- どの利用者層に効果があるか
-- 平均値だけでは分からない評価分布の変化
-- 因果推論による比較可能なセグメント設計
+### Dockerを使用する場合
+
+```bash
+git clone https://github.com/Ryot7m/Causal-comparison.git
+cd Causal-comparison
+docker compose up --build
+
+起動後にこちらのURLからアクセスしてください
+
+- Swagger UI: http://localhost:8080/docs
+- Health Check: http://localhost:8080/health
+
+## この分析で確認できること
+
+- 一定の因果識別仮定のもとで推定された施策効果
+- セグメントごとの平均処置効果の違い
+- 平均値だけでは捉えにくいアウトカム分布の変化
+- 解釈可能なセグメント境界
 
 例えば、
 
@@ -29,31 +45,35 @@ CSVをアップロードすると
 といった施策効果を観察データから推定できます。
 
 
-                        Client
-                           │
-                           │ CSV Upload
-                           ▼
-                 +------------------+
-                 |     FastAPI      |
-                 |      api.py      |
-                 +------------------+
-                           │
-                           ▼
-                 +------------------+
-                 |   services.py    |
-                 | Analysis Pipeline|
-                 +------------------+
-                           │
-        ┌──────────────────┼──────────────────┐
-        ▼                  ▼                  ▼
- segmentation.py      aipw.py          drcdf.py
-        │
-        │
-        ▼
-      hei.py
-        │
-        ▼
-   JSON Response
+                       ## アーキテクチャ
+
+```text
+Client
+  │
+  │ CSV Upload
+  ▼
+app/main.py
+FastAPI Application
+  │
+  ▼
+app/api.py
+API Endpoint
+  │
+  ▼
+app/analysis.py
+Analysis Pipeline
+  │
+  ├── workspace/preprocess.py
+  ├── workspace/segmentation.py
+  ├── workspace/aipw.py
+  ├── workspace/drcdf.py
+  └── workspace/hei.py
+  │
+  ▼
+Pydantic Response
+  │
+  ▼
+JSON
 
  ## Directory Structure
 
@@ -125,13 +145,30 @@ multipart/form-data
     "cut2": 3.78
   },
   "ate": [
-    ...
+    {
+      "cls": 0,
+      "clsnum": 120,
+      "ate": 0.18,
+      "se": 0.07,
+      "ci_low": 0.04,
+      "ci_high": 0.32
+    }
   ],
   "drcdf": [
-    ...
+    {
+      "seg": 0,
+      "c": 0,
+      "threshold": 1.0,
+      "F1_dr": 0.12,
+      "F0_dr": 0.18,
+      "tau_c": -0.06,
+      "se_c": 0.03,
+      "ci_low": -0.12,
+      "ci_high": 0.0
+    }
   ],
   "hei": {
-    ...
+    "score": 0.42
   }
 }
 ```
@@ -151,6 +188,14 @@ multipart/form-data
 |-----------------|------|
 | 400 | 入力データに必要な列が存在しないなどの入力エラー |
 | 500 | サーバ内部で予期しないエラーが発生 |
+
+## テスト
+
+通常のテストを実行します。
+
+```bash
+python -m pytest
+```
 
 ## 推定フロー
 
@@ -228,7 +273,9 @@ JSONレスポンス生成
 - **scikit-learn**：特徴量変換・学習処理
 - **AIPW / DR-CDF**：因果効果・分布効果の推定
 - **Docker**：実行環境のコンテナ化
-- **GitHub Actions**：テストの自動実行（予定）
+```md
+- **pytest / pytest-cov**：単体テスト・統合テスト・カバレッジ計測
+- **GitHub Actions**：pushおよびpull request時の自動テスト
 
 ## 研究アルゴリズム
 
@@ -329,3 +376,16 @@ HEI
 | 2 | 332 | 111 | 0.097 | 0.007 | 0.902 |
 
 提案手法は、Causal Clusteringと同等またはそれ以上の異質性を示しつつ、特徴量に基づく単純なセグメント境界を用いることで、高い解釈性を維持しています。
+
+## 前提と制約
+
+本プロジェクトの推定結果は、以下の仮定に依存します。
+
+- 測定されていない交絡因子が存在しないこと
+- 各対象が処置群・対照群のどちらにもなり得ること
+- 対象間で処置の干渉がないこと
+- 傾向スコアモデルまたはアウトカムモデルが適切に指定されていること
+
+また、現在の実装では同一データをセグメント選択と効果推定に使用しています。報告される信頼区間は、セグメント選択による不確実性を完全には考慮していません。
+
+本プロジェクトは研究・検証用の実装であり、推定結果だけを根拠として重要な意思決定を行うことは想定していません。
