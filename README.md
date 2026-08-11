@@ -23,6 +23,7 @@ CSVをアップロードすると
 git clone https://github.com/Ryot7m/Causal-comparison.git
 cd Causal-comparison
 docker compose up --build
+```
 
 起動後にこちらのURLからアクセスしてください
 
@@ -45,7 +46,7 @@ docker compose up --build
 といった施策効果を観察データから推定できます。
 
 
-                       ## アーキテクチャ
+## アーキテクチャ
 
 ```text
 Client
@@ -78,7 +79,7 @@ JSON
  ## Directory Structure
 
 ```text
-causal-inference-platform/
+causal-comparison/
 │
 ├── app/
 │   ├── main.py          # FastAPIアプリケーション
@@ -89,20 +90,28 @@ causal-inference-platform/
 │   └── database.py      # DB接続（拡張用）
 │
 ├── workspace/
+│   ├── preprocess.py
 │   ├── segmentation.py  # セグメンテーション
-    ├── calibrated.py    # 確率較正の共通処理
+│   ├── calibrated.py    # 確率較正の共通処理
 │   ├── aipw.py          # AIPW推定
 │   ├── drcdf.py         # DR-CDF推定
 │   ├── hei.py           # HEI算出
 │   └── ateplot.py       # 可視化
+│   └── drcdfplot.py
 │
 ├── tests/               # テストコード
 │
-├── main.py              # 研究用実行スクリプト
+├── .github/
+│   ├── workflows/
+│       ├── pytests.yml
+│
+├── research.py              # 研究用実行スクリプト
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
-└── README.md
+├── requirements-dev.txt
+├── README.md
+└── pytest.ini
 ```
 
 ## API仕様
@@ -273,7 +282,6 @@ JSONレスポンス生成
 - **scikit-learn**：特徴量変換・学習処理
 - **AIPW / DR-CDF**：因果効果・分布効果の推定
 - **Docker**：実行環境のコンテナ化
-```md
 - **pytest / pytest-cov**：単体テスト・統合テスト・カバレッジ計測
 - **GitHub Actions**：pushおよびpull request時の自動テスト
 
