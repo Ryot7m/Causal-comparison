@@ -77,6 +77,7 @@ Pydantic Response
 JSON
 ```
 
+## ディレクトリ構成
 ```text
 causal-comparison/
 │
@@ -224,7 +225,7 @@ CSVデータ
     │
     ▼
 前処理
-(preprocess)
+(pre_analysis)
     │
     ├── 説明変数の抽出
     ├── One-Hot Encoding
@@ -342,23 +343,23 @@ HEI
 ### 分析例
 
 - ATE推定結果
-![ATE](https://github.com/Ryot7m/Causal-comparison/blob/main/png/ateput.png)
+![ATE](png/ateput.png)
 
 - DR-CDF
 
-![DR-CDF正確性](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E6%AD%A3%E7%A2%BA%E6%80%A7.png)
+![DR-CDF正確性](png/正確性.png)
 
-![DR-CDF更新頻度](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E6%9B%B4%E6%96%B0%E9%A0%BB%E5%BA%A6.png)
+![DR-CDF更新頻度](png/更新頻度.png)
 
-![DR-CDF豊富さ](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E8%B1%8A%E5%AF%8C%E3%81%95.png)
+![DR-CDF豊富さ](png/豊富さ.png)
 
-![DR-CDF詳細さ](https://github.com/Ryot7m/Causal-comparison/blob/main/png/%E8%A9%B3%E7%B4%B0%E3%81%95.png)
+![DR-CDF詳細さ](png/詳細さ.png)
 
 ### 比較結果
 
 - HEI
 
-![HEI](https://github.com/Ryot7m/Causal-comparison/blob/main/png/HEI.png)
+![HEI](png/HEI.png)
 
 - セグメント境界
 
