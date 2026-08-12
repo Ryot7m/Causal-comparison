@@ -75,8 +75,7 @@ Pydantic Response
   │
   ▼
 JSON
-
- ## Directory Structure
+```
 
 ```text
 causal-comparison/
@@ -96,14 +95,14 @@ causal-comparison/
 │   ├── aipw.py          # AIPW推定
 │   ├── drcdf.py         # DR-CDF推定
 │   ├── hei.py           # HEI算出
-│   └── ateplot.py       # 可視化
+│   ├── ateplot.py       # 可視化
 │   └── drcdfplot.py
 │
 ├── tests/               # テストコード
 │
 ├── .github/
-│   ├── workflows/
-│       ├── pytests.yml
+│   └── workflows/
+│       └── pytests.yml
 │
 ├── research.py              # 研究用実行スクリプト
 ├── Dockerfile
@@ -206,6 +205,12 @@ multipart/form-data
 python -m pytest
 ```
 
+カバレッジを確認する場合：
+
+```bash
+python -m pytest --cov=app --cov=workspace --cov-report=term-missing
+```
+
 ## 推定フロー
 
 本システムでは、CSVデータを入力として受け取り、前処理から因果効果推定までを一連のパイプラインとして実行します。
@@ -290,6 +295,7 @@ JSONレスポンス生成
 本プロジェクトでは、解釈性を重視した因果セグメンテーション手法を実装しています。
 分析は以下の流れで実行されます。
 
+```text
 CSV
  ↓
 Segmentation
@@ -301,6 +307,7 @@ AIPW
 DR-CDF
  ↓
 HEI
+```
 
 詳細の説明は以下の通りです。
 
@@ -335,7 +342,7 @@ HEI
 ### 分析例
 
 - ATE推定結果
-![ATE](https://private-user-images.githubusercontent.com/107174339/617125856-8ba8b228-effa-428a-be37-d9757949d605.png?jwt=eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3ODMyNDExMzcsIm5iZiI6MTc4MzI0MDgzNywicGF0aCI6Ii8xMDcxNzQzMzkvNjE3MTI1ODU2LThiYThiMjI4LWVmZmEtNDI4YS1iZTM3LWQ5NzU3OTQ5ZDYwNS5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjYwNzA1JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI2MDcwNVQwODQwMzdaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT01MWY5MmM2MWZjZjIxMjBmZDQ1ZDg5NDZkY2U4ODgzODQ0ZDY5OTQ0NzBiMjk1MjM1ZDQwNDczYjI1OTJjMThjJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZyZXNwb25zZS1jb250ZW50LXR5cGU9aW1hZ2UlMkZwbmcifQ.AxK5T_0_c2zqghaL3WGPV5FORoTDfB4qlzRYzeUKmOE)
+![ATE](https://github.com/Ryot7m/Causal-comparison/blob/main/png/ateput.png)
 
 - DR-CDF
 
