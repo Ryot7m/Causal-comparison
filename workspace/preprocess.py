@@ -1,6 +1,12 @@
 import pandas as pd
 import numpy as np
 from fnmatch import fnmatch
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class TreatmentResult:
+    values: pd.Series
+    threshold: float | None = None
 
 def create_treatment(data, treatment):
     if treatment.mode == "binary_column":
@@ -26,7 +32,7 @@ def create_treatment(data, treatment):
         source = data[treatment.source_column]
         threshold = source.quantile(treatment.quantile)
 
-        return (source >= threshold).where(source.notna())
+        return TreatmentResult(values=source.map({treatment.control_value: 0, treatment.treated_value: 1,}))
 
 def pre_analysis(data_, config):
     data = data_.copy()
@@ -41,12 +47,6 @@ def pre_analysis(data_, config):
     
     for col, max_value in config.reverse_score_max.items():
         data[col] = max_value - data[col]
-        
-    source = data[config.state_col]
-    th_sh = source.quantile(config.threshold)
-
-    # 欠損値を対照群(0)に誤分類しない
-    data[config.treatment_col] = (source >= th_sh).where(source.notna())
     
     if config.confounder_cols is None:
         other = {

@@ -20,7 +20,8 @@ async def load_csv(file: UploadFile) -> pd.DataFrame:
     )
 @dataclass
 class AnalysisConfig:
-    treatment_col: str
+    treatment: object
+    treatment_col: str = "__treatment__"
     outcome_col: str
     segment_col: str
     confounder_cols: list[str] | None = None
@@ -41,6 +42,9 @@ class AnalysisConfig:
     reverse_score_max: dict[str, float] = field(default_factory=dict)
     segment_missing_values: tuple = ()
     weight_cap: float = 100.0
+    
+    categorical_cols: list[str] = field(default_factory=list)
+    fill_values: dict = field(default_factory=dict)
     
 def validate_data(data: pd.DataFrame, config: AnalysisConfig):
 

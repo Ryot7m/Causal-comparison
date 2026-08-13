@@ -1,5 +1,4 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
-from app.dantic import EstimateResponse
 from typing import Annotated
 from app.dantic import AnalysisRequest,EstimateResponse
 from app.analysis import estimate_service
@@ -20,7 +19,7 @@ async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str
 
     except ValueError as e:
         raise HTTPException(
-            status_code=400,
+            status_code=422,
             detail=e.errors(include_context=False)
         )
         
