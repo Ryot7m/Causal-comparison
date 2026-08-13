@@ -23,16 +23,15 @@ def create_treatment(data, treatment):
                 f"処置列に未定義の値があります: {sorted(unknown)}"
             )
 
-        return source.map({
+        return TreatmentResult(values=source.map({
             treatment.control_value: 0,
             treatment.treated_value: 1,
-        })
+        }))
 
     if treatment.mode == "quantile":
-        source = data[treatment.source_column]
-        threshold = source.quantile(treatment.quantile)
+        values = (source >= treatment.threshold).where(source.notna())
 
-        return TreatmentResult(values=source.map({treatment.control_value: 0, treatment.treated_value: 1,}))
+    return TreatmentResult(values=values, threshold=float(treatment.threshold))
 
 def pre_analysis(data_, config):
     data = data_.copy()

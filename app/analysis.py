@@ -21,25 +21,16 @@ async def load_csv(file: UploadFile) -> pd.DataFrame:
 @dataclass
 class AnalysisConfig:
     treatment: object
-    treatment_col: str = "__treatment__"
     outcome_col: str
     segment_col: str
     confounder_cols: list[str] | None = None
-    state_col: str | None = None
-    threshold: float | None = None
-    exclude_cols: list[str] = field(default_factory=list)
-    exclude_conditions: list[str] = field(default_factory=list)
-    treatment_source_col: str | None = None
+    
+    treatment_col: str = "__treatment__"
 
     #欠損処理の選択
     missing_type: Literal["drop", "zero"] = "zero"
-    zero_fill: list[str] | None = None
-
     outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])
-    score_values: list[float] = field(
-        default_factory=lambda: [1, 2, 3, 4, 5]
-    )
-    reverse_score_max: dict[str, float] = field(default_factory=dict)
+    score_values: list[float] = field(default_factory=lambda: [1, 2, 3, 4, 5])
     segment_missing_values: tuple = ()
     weight_cap: float = 100.0
     
