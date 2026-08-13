@@ -1,5 +1,6 @@
 import pandas as pd
 from io import StringIO
+from app.dantic import AnalysisRequest
 from dataclasses import dataclass, field
 from workspace.aipw import aipw_ate
 from workspace.segmentation import segmentation_rtn
@@ -57,17 +58,24 @@ def validate_data(data: pd.DataFrame, config: AnalysisConfig):
         )
     
 
-def config_name():
+def to_analysis_config(
+    request: AnalysisRequest,
+) -> AnalysisConfig:
     config = AnalysisConfig(
-        treatment_col="Treatment",
-        outcome_col="Q4_1",
-        segment_col="Q7_4",
-        state_col="Q2_9",
-        threshold=0.75,
-        confounder_cols=None,
-        reverse_score_max={"Q4_1": 6},
-        exclude_conditions=["Q2_*"],
-        exclude_cols=[]
+        treatment=request.treatment,
+        outcome_col=request.outcome.column,
+        outcome_levels=request.outcome.levels,
+        score_values=request.outcome.scores,
+        segment_col=request.segment.column,
+        segment_missing_values=tuple(
+            request.segment.missing_values
+        ),
+        confounder_cols=request.covariates.columns,
+        categorical_cols=(
+            request.covariates.categorical_columns
+        ),
+        missing_type=request.missing.strategy,
+        fill_values=request.missing.fill_values,
     )
     
     return config
@@ -108,14 +116,24 @@ def create_response(result):
         }
     }
     
-async def estimate_service(file: UploadFile):
-
+async def estimate_service(
+    file: UploadFile,
+    request_config: AnalysisRequest,
+):
     data = await load_csv(file)
-    
-    prep = config_name()
 
-    validate_data(data, prep)
-    
-    result = estimate(data, prep)
+    analysis_config = to_analysis_config(
+        request_config
+    )
+
+    validate_data(
+        data,
+        analysis_config,
+    )
+
+    result = estimate(
+        data,
+        analysis_config,
+    )
 
     return create_response(result)

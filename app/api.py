@@ -1,5 +1,7 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from app.dantic import EstimateResponse
+from typing import Annotated
+from app.dantic import AnalysisRequest,EstimateResponse
 from app.analysis import estimate_service
 
 router = APIRouter(
@@ -9,11 +11,24 @@ router = APIRouter(
 
 @router.post("/estimate", response_model=EstimateResponse)
 
-async def estimate(file : UploadFile = File(...)):
+async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str, Form(...)]):
     
     try:
-        result = await estimate_service(file)
-        return result
+        request_config = (
+            AnalysisRequest.model_validate_json(config)
+        )
+
+    except ValueError as e:
+        raise HTTPException(
+            status_code=400,
+            detail=e.errors(include_context=False)
+        )
+        
+    try:
+        return await estimate_service(
+            file=file,
+            request_config=request_config
+        )
 
     except ValueError as e:
         raise HTTPException(

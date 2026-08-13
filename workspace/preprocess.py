@@ -2,8 +2,42 @@ import pandas as pd
 import numpy as np
 from fnmatch import fnmatch
 
+def create_treatment(data, treatment):
+    if treatment.mode == "binary_column":
+        source = data[treatment.column]
+
+        allowed = {
+            treatment.treated_value,
+            treatment.control_value,
+        }
+
+        unknown = set(source.dropna().unique()) - allowed
+        if unknown:
+            raise ValueError(
+                f"処置列に未定義の値があります: {sorted(unknown)}"
+            )
+
+        return source.map({
+            treatment.control_value: 0,
+            treatment.treated_value: 1,
+        })
+
+    if treatment.mode == "quantile":
+        source = data[treatment.source_column]
+        threshold = source.quantile(treatment.quantile)
+
+        return (source >= threshold).where(source.notna())
+
 def pre_analysis(data_, config):
     data = data_.copy()
+    
+    treatment_result = create_treatment(
+        data, config.treatment,
+    )
+
+    data[config.treatment_col] = (
+        treatment_result.values
+    )
     
     for col, max_value in config.reverse_score_max.items():
         data[col] = max_value - data[col]
@@ -129,5 +163,6 @@ def pre_analysis(data_, config):
         "S" : S0,
         "treat" : A,
         "ftr" : feature_names,
-        "score" : score
+        "score" : score,
+        "treatment_threshold": treatment_result.threshold
     }
