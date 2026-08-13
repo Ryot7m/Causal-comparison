@@ -42,8 +42,14 @@ def validate_data(data: pd.DataFrame, config: AnalysisConfig):
     required = {
         config.outcome_col,
         config.segment_col,
-        config.state_col,
+        *config.confounder_cols,
     }
+    
+    if config.treatment.mode == "binary_column":
+        required.add(config.treatment.column)
+
+    elif config.treatment.mode == "quantile":
+        required.add(config.treatment.source_column)
 
     missing = required - set(data.columns)
 
