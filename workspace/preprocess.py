@@ -74,17 +74,6 @@ def pre_analysis(data_, config):
     confounder = list(config.confounder_cols)
         
     if config.missing_type == "zero":
-        unknown = (
-            set(config.fill_values)
-            - set(data.columns)
-        )
-
-        if unknown:
-            raise ValueError(
-                "欠損補完対象に存在しない列があります: "
-                f"{sorted(unknown)}"
-            )
-
         data[confounder] = data[confounder].fillna(0)
     
     elif config.missing_type == "fill":
@@ -104,11 +93,11 @@ def pre_analysis(data_, config):
     elif config.missing_type != "drop":
         raise ValueError(
             "missing strategyは"
-            "'drop'または'zero'を指定してください。"
+            "'drop','fill','zero'のいずれかを指定してください。"
         )
     
     for col in config.categorical_cols:
-            data[col] = data[col].astype("category")
+        data[col] = data[col].astype("category")
 
     required = [
         config.treatment_col,
