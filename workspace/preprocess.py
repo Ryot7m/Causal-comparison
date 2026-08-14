@@ -1,18 +1,79 @@
 import pandas as pd
 import numpy as np
 from fnmatch import fnmatch
+from dataclasses import dataclass
 
+@dataclass(frozen=True)
+class TreatmentResult:
+    values: pd.Series
+    threshold: float | None = None
+
+def create_treatment(data, treatment):
+    if treatment.mode == "binary_column":
+        source = data[treatment.column]
+
+        allowed = {
+            treatment.treated_value,
+            treatment.control_value,
+        }
+
+        unknown = set(source.dropna().unique()) - allowed
+        if unknown:
+            raise ValueError(
+                f"処置列に未定義の値があります: {sorted(unknown)}"
+            )
+
+        return TreatmentResult(values=source.map({
+            treatment.control_value: 0,
+            treatment.treated_value: 1,
+        }))
+
+    if treatment.mode == "quantile":
+        source = data[treatment.source_column]
+
+        if not pd.api.types.is_numeric_dtype(source):
+            raise ValueError(
+                "分位点処置の生成元には"
+                "数値列を指定してください。"
+            )
+
+        threshold = float(
+            source.quantile(treatment.quantile)
+        )
+
+        comparisons = {
+            "ge": source.ge,
+            "gt": source.gt,
+            "le": source.le,
+            "lt": source.lt,
+        }
+
+        values = comparisons[
+            treatment.treated_when
+        ](threshold).where(source.notna())
+
+        return TreatmentResult(
+            values=values,
+            threshold=threshold,
+        )
+
+    raise ValueError(
+        f"未対応の処置方式です: {treatment.mode}"
+    )
+    
 def pre_analysis(data_, config):
     data = data_.copy()
     
+    treatment_result = create_treatment(
+        data, config.treatment,
+    )
+
+    data[config.treatment_col] = (
+        treatment_result.values
+    )
+    
     for col, max_value in config.reverse_score_max.items():
         data[col] = max_value - data[col]
-        
-    source = data[config.state_col]
-    th_sh = source.quantile(config.threshold)
-
-    # 欠損値を対照群(0)に誤分類しない
-    data[config.treatment_col] = (source >= th_sh).where(source.notna())
     
     if config.confounder_cols is None:
         other = {
@@ -40,32 +101,25 @@ def pre_analysis(data_, config):
     )]
         
     if config.missing_type == "zero":
-    # Noneなら全共変量を0埋め
-        if config.zero_fill is None:
-            fill_cols = list(confounder)
-        else:
-            fill_cols = list(config.zero_fill)
+        unknown = (
+            set(config.fill_values)
+            - set(data.columns)
+        )
 
-        unknown = set(fill_cols) - set(data.columns)
         if unknown:
             raise ValueError(
-                f"0埋め対象に存在しない列があります: {sorted(unknown)}"
+                "欠損補完対象に存在しない列があります: "
+                f"{sorted(unknown)}"
             )
 
-        # 0埋めしない変数の設定（処置・アウトカム・セグメント）
-        omit = {
-            config.treatment_col,
-            config.outcome_col,
-            config.segment_col,
-            config.state_col,
-        }
-        fill_cols = [col for col in fill_cols if col not in omit]
-
-        data[fill_cols] = data[fill_cols].fillna(0)
+        data = data.fillna(
+            value=config.fill_values
+        )
 
     elif config.missing_type != "drop":
         raise ValueError(
-            "missing_strategy は 'drop' または 'zero' を指定してください。"
+            "missing strategyは"
+            "'drop'または'fill'を指定してください。"
         )
 
     required = [
@@ -129,5 +183,6 @@ def pre_analysis(data_, config):
         "S" : S0,
         "treat" : A,
         "ftr" : feature_names,
-        "score" : score
+        "score" : score,
+        "treatment_threshold": treatment_result.threshold
     }

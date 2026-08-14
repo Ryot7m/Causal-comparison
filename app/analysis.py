@@ -1,5 +1,6 @@
 import pandas as pd
 from io import StringIO
+from app.dantic import AnalysisRequest
 from dataclasses import dataclass, field
 from workspace.aipw import aipw_ate
 from workspace.segmentation import segmentation_rtn
@@ -18,35 +19,36 @@ async def load_csv(file: UploadFile) -> pd.DataFrame:
     )
 @dataclass
 class AnalysisConfig:
-    treatment_col: str
+    treatment: object
     outcome_col: str
     segment_col: str
     confounder_cols: list[str] | None = None
-    state_col: str | None = None
-    threshold: float | None = None
-    exclude_cols: list[str] = field(default_factory=list)
-    exclude_conditions: list[str] = field(default_factory=list)
-    treatment_source_col: str | None = None
+    
+    treatment_col: str = "__treatment__"
 
     #欠損処理の選択
     missing_type: Literal["drop", "zero"] = "zero"
-    zero_fill: list[str] | None = None
-
     outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])
-    score_values: list[float] = field(
-        default_factory=lambda: [1, 2, 3, 4, 5]
-    )
-    reverse_score_max: dict[str, float] = field(default_factory=dict)
+    score_values: list[float] = field(default_factory=lambda: [1, 2, 3, 4, 5])
     segment_missing_values: tuple = ()
     weight_cap: float = 100.0
+    
+    categorical_cols: list[str] = field(default_factory=list)
+    fill_values: dict = field(default_factory=dict)
     
 def validate_data(data: pd.DataFrame, config: AnalysisConfig):
 
     required = {
         config.outcome_col,
         config.segment_col,
-        config.state_col,
+        *config.confounder_cols,
     }
+    
+    if config.treatment.mode == "binary_column":
+        required.add(config.treatment.column)
+
+    elif config.treatment.mode == "quantile":
+        required.add(config.treatment.source_column)
 
     missing = required - set(data.columns)
 
@@ -56,17 +58,24 @@ def validate_data(data: pd.DataFrame, config: AnalysisConfig):
         )
     
 
-def config_name():
+def to_analysis_config(
+    request: AnalysisRequest,
+) -> AnalysisConfig:
     config = AnalysisConfig(
-        treatment_col="Treatment",
-        outcome_col="Q4_1",
-        segment_col="Q7_4",
-        state_col="Q2_9",
-        threshold=0.75,
-        confounder_cols=None,
-        reverse_score_max={"Q4_1": 6},
-        exclude_conditions=["Q2_*"],
-        exclude_cols=[]
+        treatment=request.treatment,
+        outcome_col=request.outcome.column,
+        outcome_levels=request.outcome.levels,
+        score_values=request.outcome.scores,
+        segment_col=request.segment.column,
+        segment_missing_values=tuple(
+            request.segment.missing_values
+        ),
+        confounder_cols=request.covariates.columns,
+        categorical_cols=(
+            request.covariates.categorical_columns
+        ),
+        missing_type=request.missing.strategy,
+        fill_values=request.missing.fill_values,
     )
     
     return config
@@ -106,14 +115,24 @@ def create_response(result):
         }
     }
     
-async def estimate_service(file: UploadFile):
-
+async def estimate_service(
+    file: UploadFile,
+    request_config: AnalysisRequest,
+):
     data = await load_csv(file)
-    
-    prep = config_name()
 
-    validate_data(data, prep)
-    
-    result = estimate(data, prep)
+    analysis_config = to_analysis_config(
+        request_config
+    )
+
+    validate_data(
+        data,
+        analysis_config,
+    )
+
+    result = estimate(
+        data,
+        analysis_config,
+    )
 
     return create_response(result)
