@@ -161,7 +161,7 @@ class CovariateSpec(BaseModel):
 class MissingSpec(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    strategy: Literal["drop", "fill"] = "drop"
+    strategy: Literal["drop", "zero"] = "drop"
     fill_values: dict[str, Scalar] = Field(
         default_factory=dict,
     )
