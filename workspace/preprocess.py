@@ -29,10 +29,38 @@ def create_treatment(data, treatment):
         }))
 
     if treatment.mode == "quantile":
-        values = (source >= treatment.threshold).where(source.notna())
+        source = data[treatment.source_column]
 
-    return TreatmentResult(values=values, threshold=float(treatment.threshold))
+        if not pd.api.types.is_numeric_dtype(source):
+            raise ValueError(
+                "分位点処置の生成元には"
+                "数値列を指定してください。"
+            )
 
+        threshold = float(
+            source.quantile(treatment.quantile)
+        )
+
+        comparisons = {
+            "ge": source.ge,
+            "gt": source.gt,
+            "le": source.le,
+            "lt": source.lt,
+        }
+
+        values = comparisons[
+            treatment.treated_when
+        ](threshold).where(source.notna())
+
+        return TreatmentResult(
+            values=values,
+            threshold=threshold,
+        )
+
+    raise ValueError(
+        f"未対応の処置方式です: {treatment.mode}"
+    )
+    
 def pre_analysis(data_, config):
     data = data_.copy()
     
@@ -72,33 +100,26 @@ def pre_analysis(data_, config):
         for pattern in config.exclude_conditions
     )]
         
-    if config.missing_type == "zero":
-    # Noneなら全共変量を0埋め
-        if config.zero_fill is None:
-            fill_cols = list(confounder)
-        else:
-            fill_cols = list(config.zero_fill)
+    if config.missing_type == "fill":
+        unknown = (
+            set(config.fill_values)
+            - set(data.columns)
+        )
 
-        unknown = set(fill_cols) - set(data.columns)
         if unknown:
             raise ValueError(
-                f"0埋め対象に存在しない列があります: {sorted(unknown)}"
+                "欠損補完対象に存在しない列があります: "
+                f"{sorted(unknown)}"
             )
 
-        # 0埋めしない変数の設定（処置・アウトカム・セグメント）
-        omit = {
-            config.treatment_col,
-            config.outcome_col,
-            config.segment_col,
-            config.state_col,
-        }
-        fill_cols = [col for col in fill_cols if col not in omit]
-
-        data[fill_cols] = data[fill_cols].fillna(0)
+        data = data.fillna(
+            value=config.fill_values
+        )
 
     elif config.missing_type != "drop":
         raise ValueError(
-            "missing_strategy は 'drop' または 'zero' を指定してください。"
+            "missing strategyは"
+            "'drop'または'fill'を指定してください。"
         )
 
     required = [
