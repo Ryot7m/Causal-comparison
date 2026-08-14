@@ -27,7 +27,7 @@ class AnalysisConfig:
     treatment_col: str = "__treatment__"
 
     #欠損処理の選択
-    missing_type: Literal["drop", "zero"] = "zero"
+    missing_type: Literal["drop", "zero", "fill"] = "drop"
     outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])
     score_values: list[float] = field(default_factory=lambda: [1, 2, 3, 4, 5])
     segment_missing_values: tuple = ()
