@@ -100,7 +100,7 @@ def pre_analysis(data_, config):
         for pattern in config.exclude_conditions
     )]
         
-    if config.missing_type == "fill":
+    if config.missing_type == "zero":
         unknown = (
             set(config.fill_values)
             - set(data.columns)
