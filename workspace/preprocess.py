@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from fnmatch import fnmatch
 from dataclasses import dataclass
 
 @dataclass(frozen=True)
@@ -71,34 +70,8 @@ def pre_analysis(data_, config):
     data[config.treatment_col] = (
         treatment_result.values
     )
-    
-    for col, max_value in config.reverse_score_max.items():
-        data[col] = max_value - data[col]
-    
-    if config.confounder_cols is None:
-        other = {
-            config.treatment_col,
-            config.outcome_col,
-            config.segment_col,
-            config.state_col,
-            *config.exclude_cols,
-        }
 
-        if config.treatment_source_col is not None:
-            other.add(config.state_col)
-
-        confounder = [
-            col for col in data.columns
-            if col not in other]
-    else:
-        confounder = list(config.confounder_cols)
-        
-    confounder = [
-    col for col in confounder
-    if not any(
-        fnmatch(col, pattern)
-        for pattern in config.exclude_conditions
-    )]
+    confounder = list(config.confounder_cols)
         
     if config.missing_type == "zero":
         unknown = (
@@ -112,15 +85,16 @@ def pre_analysis(data_, config):
                 f"{sorted(unknown)}"
             )
 
-        data = data.fillna(
-            value=config.fill_values
-        )
+        data[confounder] = data[confounder].fillna(0)
 
     elif config.missing_type != "drop":
         raise ValueError(
             "missing strategyは"
-            "'drop'または'fill'を指定してください。"
+            "'drop'または'zero'を指定してください。"
         )
+    
+    for col in config.categorical_cols:
+            data[col] = data[col].astype("category")
 
     required = [
         config.treatment_col,
