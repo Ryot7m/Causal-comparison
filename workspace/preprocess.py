@@ -86,6 +86,20 @@ def pre_analysis(data_, config):
             )
 
         data[confounder] = data[confounder].fillna(0)
+    
+    elif config.missing_type == "fill":
+        fill_cols = list(config.fill_values)
+
+        unknown = set(fill_cols) - set(confounder)
+        if unknown:
+            raise ValueError(
+                "fill_valuesには交絡変数だけを指定してください: "
+                f"{sorted(unknown)}"
+            )
+
+        data[fill_cols] = data[fill_cols].fillna(
+            value=config.fill_values
+        )
 
     elif config.missing_type != "drop":
         raise ValueError(

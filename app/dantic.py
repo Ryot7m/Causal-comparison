@@ -161,10 +161,24 @@ class CovariateSpec(BaseModel):
 class MissingSpec(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    strategy: Literal["drop", "zero"] = "drop"
+    strategy: Literal["drop", "zero", "fill"] = "drop"
     fill_values: dict[str, Scalar] = Field(
         default_factory=dict,
     )
+    
+    @model_validator(mode="after")
+    def validate_missing(self):
+        if self.strategy == "fill" and not self.fill_values:
+            raise ValueError(
+                "strategy='fill'ではfill_valuesを指定してください。"
+            )
+
+        if self.strategy != "fill" and self.fill_values:
+            raise ValueError(
+                "fill_valuesはstrategy='fill'の場合だけ指定できます。"
+            )
+
+        return self
 
 
 class AnalysisRequest(BaseModel):
