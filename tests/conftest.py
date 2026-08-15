@@ -34,6 +34,7 @@ def config():
     
     return config
 
+@pytest.fixture
 def analysis_config():
     return AnalysisConfig(
         treatment=QuantileTreatment(
