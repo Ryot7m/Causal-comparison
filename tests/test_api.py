@@ -1,4 +1,5 @@
 import pandas as pd
+import json
 from app import analysis
 
 from fastapi.testclient import TestClient
@@ -8,7 +9,7 @@ from app.main import app
 
 client = TestClient(app)
 
-def test_estimate_accepts_valid_csv(monkeypatch):
+def test_estimate_accepts_valid_csv(monkeypatch, config):
     captured = {}
 
     def fake_estimate(data, config):
@@ -63,13 +64,8 @@ def test_estimate_accepts_valid_csv(monkeypatch):
 
     response = client.post(
         "/api/estimate",
-        files={
-            "file": (
-                "valid.csv",
-                csv,
-                "text/csv",
-            ),
-        },
+        files={"file": ("valid.csv", csv, "text/csv")},
+        data={"config": json.dumps(config)}
     )
 
     assert response.status_code == 200
@@ -81,18 +77,18 @@ def test_estimate_accepts_valid_csv(monkeypatch):
         "Q4_1",
         "Q7_4",
         "Q2_9",
-        "x1",
+        "x1"
     ]
 
     assert body["segment"] == {
         "cut1": 1.0,
-        "cut2": 2.0,
+        "cut2": 2.0
     }
 
     assert len(body["ate"]) == 1
     assert len(body["drcdf"]) == 1
     assert body["hei"] == {
-        "score": 0.25,
+        "score": 0.25
     }
 
 def test_health():
@@ -100,22 +96,17 @@ def test_health():
 
     assert response.status_code == 200
     assert response.json() == {
-        "status": "ok",
+        "status": "ok"
     }
 
 
-def test_estimate_rejects_missing_columns():
+def test_estimate_rejects_missing_columns(config):
     csv = b"a,b\n1,2\n"
 
     response = client.post(
         "/api/estimate",
-        files={
-            "file": (
-                "invalid.csv",
-                csv,
-                "text/csv",
-            ),
-        },
+        files={"file": ("valid.csv", csv, "text/csv")},
+        data={"config": json.dumps(config)}
     )
 
     assert response.status_code == 400

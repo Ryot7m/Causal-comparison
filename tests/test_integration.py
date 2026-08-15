@@ -3,20 +3,21 @@ import math
 import numpy as np
 import pandas as pd
 import pytest
+import json
 from fastapi.testclient import TestClient
 
 from app.main import app
 
 
 @pytest.mark.slow
-def test_estimate_endpoint_runs_full_pipeline():
+def test_estimate_endpoint_runs_full_pipeline(config):
     rng = np.random.default_rng(42)
 
     rows_per_segment = 120
     total_rows = rows_per_segment * 3
     within_segment = np.tile(
         np.arange(rows_per_segment),
-        3,
+        3
     )
 
     data = pd.DataFrame({
@@ -27,8 +28,12 @@ def test_estimate_endpoint_runs_full_pipeline():
         ),
         "Q2_9": within_segment.astype(float),
         "x1": rng.normal(size=total_rows),
-        "x2": rng.normal(size=total_rows),
+        "x2": rng.normal(size=total_rows)
     })
+    
+    config["outcome"]["levels"] = [1, 2, 3, 4, 5]
+    config["outcome"]["scores"] = [1.0, 2.0, 3.0, 4.0, 5.0]
+    config["covariates"]["columns"] = ["x1", "x2"]
 
     csv = data.to_csv(
         index=False,
@@ -37,13 +42,8 @@ def test_estimate_endpoint_runs_full_pipeline():
     with TestClient(app) as client:
         response = client.post(
             "/api/estimate",
-            files={
-                "file": (
-                    "synthetic.csv",
-                    csv,
-                    "text/csv",
-                ),
-            },
+            files={"file": ("valid.csv", csv, "text/csv")},
+                    data={"config": json.dumps(config)}
         )
 
     assert response.status_code == 200, response.text
@@ -54,12 +54,12 @@ def test_estimate_endpoint_runs_full_pipeline():
         "segment",
         "ate",
         "drcdf",
-        "hei",
+        "hei"
     }
 
     assert body["segment"] == {
         "cut1": 1.0,
-        "cut2": 2.0,
+        "cut2": 2.0
     }
 
     # 3セグメント分のATE
@@ -84,7 +84,7 @@ def test_estimate_endpoint_runs_full_pipeline():
 
     # 3セグメント × 5アウトカム水準
     assert len(body["drcdf"]) == 15
-
+    
     assert {
         row["seg"]
         for row in body["drcdf"]
