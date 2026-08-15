@@ -9,10 +9,10 @@ from app.main import app
 
 client = TestClient(app)
 
-def test_estimate_accepts_valid_csv(monkeypatch):
+def test_estimate_accepts_valid_csv(monkeypatch, config):
     captured = {}
 
-    def fake_estimate(data, config):
+    def fake_estimate(data):
         captured["columns"] = list(data.columns)
         captured["row_count"] = len(data)
 
@@ -61,32 +61,6 @@ def test_estimate_accepts_valid_csv(monkeypatch):
         "2,2,20,0.2\n"
         "3,3,30,0.3\n"
     ).encode("utf-8")
-    
-    config = {
-        "schema_version": "1",
-        "treatment": {
-            "mode": "quantile",
-            "source_column": "Q2_9",
-            "quantile": 0.5,
-            "treated_when": "ge",
-        },
-        "outcome": {
-            "column": "Q4_1",
-            "levels": [1, 2, 3],
-            "scores": [1.0, 2.0, 3.0],
-        },
-        "segment": {
-            "column": "Q7_4",
-            "missing_values": [],
-        },
-        "covariates": {
-            "columns": ["x1"],
-            "categorical_columns": [],
-        },
-        "missing": {
-            "strategy": "drop",
-        }
-    }
 
     response = client.post(
         "/api/estimate",
@@ -126,13 +100,14 @@ def test_health():
     }
 
 
-def test_estimate_rejects_missing_columns():
+def test_estimate_rejects_missing_columns(config):
     csv = b"a,b\n1,2\n"
 
     response = client.post(
         "/api/estimate",
-        files={"file": ("valid.csv", csv, "text/csv")}
+        files={"file": ("valid.csv", csv, "text/csv")},
+        data={"config": json.dumps(config)}
     )
 
-    assert response.status_code == 400
+    assert response.status_code == 422
     assert "必要な列" in response.json()["detail"]

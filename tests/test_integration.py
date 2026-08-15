@@ -10,7 +10,7 @@ from app.main import app
 
 
 @pytest.mark.slow
-def test_estimate_endpoint_runs_full_pipeline():
+def test_estimate_endpoint_runs_full_pipeline(config):
     rng = np.random.default_rng(42)
 
     rows_per_segment = 120
@@ -30,36 +30,14 @@ def test_estimate_endpoint_runs_full_pipeline():
         "x1": rng.normal(size=total_rows),
         "x2": rng.normal(size=total_rows)
     })
+    
+    config["outcome"]["levels"] = [1, 2, 3, 4, 5]
+    config["outcome"]["scores"] = [1.0, 2.0, 3.0, 4.0, 5.0]
+    config["covariates"]["columns"] = ["x1", "x2"]
 
     csv = data.to_csv(
         index=False,
     ).encode("utf-8")
-    
-    config = {
-            "schema_version": "1",
-            "treatment": {
-                "mode": "quantile",
-                "source_column": "Q2_9",
-                "quantile": 0.5,
-                "treated_when": "ge",
-            },
-            "outcome": {
-                "column": "Q4_1",
-                "levels": [1, 2, 3],
-                "scores": [1.0, 2.0, 3.0],
-            },
-            "segment": {
-                "column": "Q7_4",
-                "missing_values": [],
-            },
-            "covariates": {
-                "columns": ["x1"],
-                "categorical_columns": [],
-            },
-            "missing": {
-                "strategy": "drop",
-            }
-        }
 
     with TestClient(app) as client:
         response = client.post(
