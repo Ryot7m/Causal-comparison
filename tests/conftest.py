@@ -5,7 +5,7 @@ from app.analysis import AnalysisConfig
 from app.dantic import QuantileTreatment
 
 @pytest.fixture
-def api_config():
+def config():
     config = {
             "schema_version": "1",
             "treatment": {

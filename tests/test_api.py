@@ -12,7 +12,7 @@ client = TestClient(app)
 def test_estimate_accepts_valid_csv(monkeypatch, config):
     captured = {}
 
-    def fake_estimate(data):
+    def fake_estimate(data, config):
         captured["columns"] = list(data.columns)
         captured["row_count"] = len(data)
 
@@ -109,5 +109,5 @@ def test_estimate_rejects_missing_columns(config):
         data={"config": json.dumps(config)}
     )
 
-    assert response.status_code == 422
+    assert response.status_code == 400
     assert "必要な列" in response.json()["detail"]
