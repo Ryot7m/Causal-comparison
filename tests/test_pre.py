@@ -52,3 +52,16 @@ def test_pre_analysis_rejects_unknown_outcome(
             analysis_data,
             analysis_config,
         )
+        
+def test_pre_analysis_rejects_single_treatment_group(analysis_data, analysis_config):
+    # segment=2の行は処置群なので、除外すると対照群だけが残る
+    analysis_config.segment_missing_values = (2,)
+
+    with pytest.raises(
+        ValueError,
+        match="処置群（1）と対照群（0）の両方",
+    ):
+        pre_analysis(
+            analysis_data,
+            analysis_config,
+        )
