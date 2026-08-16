@@ -151,6 +151,20 @@ def pre_analysis(data_, config):
     A0 = A[ok]
     Y0 = Y[ok].astype(int)
     
+    groups, counts = np.unique(A0, return_counts=True)
+
+    group_counts = {
+        int(group): int(count)
+        for group, count in zip(groups, counts)
+    }
+
+    if set(group_counts) != {0, 1}:
+        raise ValueError(
+            "分析対象データには処置群（1）と"
+            "対照群（0）の両方が必要です。"
+            f"群別件数: {group_counts}"
+        )
+    
     return {
         "seg" : config.segment_col,
         "level" : levels,

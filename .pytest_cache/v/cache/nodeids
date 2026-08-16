@@ -19,6 +19,8 @@
   "tests/test_drcdf.py::test_drcdf_returns_expected_structure",
   "tests/test_hei.py::test_heterogeneity_is_zero_for_constant_outcome",
   "tests/test_integration.py::test_estimate_endpoint_runs_full_pipeline",
+  "tests/test_integration.py::test_estimate_endpoint_runs_full_pipeline[outcome_levels0]",
+  "tests/test_integration.py::test_estimate_endpoint_runs_full_pipeline[outcome_levels1]",
   "tests/test_plots.py::test_ate_plot_saves_each_segment_image",
   "tests/test_plots.py::test_drcdf_plot_saves_images",
   "tests/test_pre.py::test_pre_analysis_creates_expected_treatment",
