@@ -99,8 +99,8 @@ def pre_analysis(data_, config):
     for col in config.categorical_cols:
         data[col] = data[col].astype("category")
         
-    data[config.segment_cols] = data[
-        config.segment_cols
+    data[config.segment_col] = data[
+        config.segment_col
         ].replace(list(config.segment_missing_values),
                   np.nan)
 
