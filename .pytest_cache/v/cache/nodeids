@@ -24,6 +24,7 @@
   "tests/test_plots.py::test_ate_plot_saves_each_segment_image",
   "tests/test_plots.py::test_drcdf_plot_saves_images",
   "tests/test_pre.py::test_pre_analysis_creates_expected_treatment",
+  "tests/test_pre.py::test_pre_analysis_rejects_single_treatment_group",
   "tests/test_pre.py::test_pre_analysis_rejects_unknown_outcome",
   "tests/test_pre.py::test_pre_analysis_zero_fills_missing_value",
   "tests/test_segment.py::test_ess_with_equal_weights_equals_sample_size",
