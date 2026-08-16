@@ -10,7 +10,12 @@ from app.main import app
 
 
 @pytest.mark.slow
-def test_estimate_endpoint_runs_full_pipeline(config):
+@pytest.mark.parametrize(
+    "outcome_levels",
+    [[1, 2, 3, 4, 5],["very_low", "low", "middle", "high", "very_high"]]
+)
+
+def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels):
     rng = np.random.default_rng(42)
 
     rows_per_segment = 120
@@ -20,18 +25,20 @@ def test_estimate_endpoint_runs_full_pipeline(config):
         3
     )
 
+    outcome_labels = np.asarray(outcome_levels, dtype=object)
+
     data = pd.DataFrame({
-        "Q4_1": (within_segment % 5) + 1,
+        "Q4_1": outcome_labels[within_segment % 5],
         "Q7_4": np.repeat(
             [1.0, 2.0, 3.0],
             rows_per_segment,
         ),
         "Q2_9": within_segment.astype(float),
         "x1": rng.normal(size=total_rows),
-        "x2": rng.normal(size=total_rows)
+        "x2": rng.normal(size=total_rows),
     })
     
-    config["outcome"]["levels"] = [1, 2, 3, 4, 5]
+    config["outcome"]["levels"] = outcome_levels
     config["outcome"]["scores"] = [1.0, 2.0, 3.0, 4.0, 5.0]
     config["covariates"]["columns"] = ["x1", "x2"]
 
@@ -81,7 +88,9 @@ def test_estimate_endpoint_runs_full_pipeline(config):
         and math.isfinite(row["ci_high"])
         for row in body["ate"]
     )
-
+    
+    assert {row["threshold"] for row in body["drcdf"]} == set(outcome_levels)
+    
     # 3セグメント × 5アウトカム水準
     assert len(body["drcdf"]) == 15
     

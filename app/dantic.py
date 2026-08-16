@@ -13,10 +13,12 @@ class AteResult(BaseModel):
     ci_low : float
     ci_high : float
     
+
+Scalar = str | int | float | bool
 class DrcdfResult(BaseModel):
     seg: int
     c: int
-    threshold: float
+    threshold: Scalar
     F1_dr: float
     F0_dr: float
     tau_c: float
@@ -36,9 +38,6 @@ class EstimateResponse(BaseModel):
     drcdf: list[DrcdfResult]
 
     hei: HeiResult
-    
-Scalar = str | int | float | bool
-
 
 class BinaryColumnTreatment(BaseModel):
     model_config = ConfigDict(extra="forbid")
