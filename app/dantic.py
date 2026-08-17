@@ -195,3 +195,66 @@ class AnalysisRequest(BaseModel):
     missing: MissingSpec = Field(
         default_factory=MissingSpec,
     )
+    
+class AnalysisRequest(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        str_strip_whitespace=True,
+    )
+
+    schema_version: Literal["1"] = "1"
+    treatment: TreatmentSpec
+    outcome: OutcomeSpec
+    segment: SegmentSpec
+    covariates: CovariateSpec
+    missing: MissingSpec = Field(
+        default_factory=MissingSpec,
+    )
+
+    @model_validator(mode="after")
+    def validate_column_roles(self):
+        if self.treatment.mode == "binary_column":
+            treatment_column = self.treatment.column
+        else:
+            treatment_column = self.treatment.source_column
+
+        main_roles = {
+            "outcome": self.outcome.column,
+            "segment": self.segment.column,
+            "treatment": treatment_column,
+        }
+
+        roles_by_column = {}
+
+        for role, column in main_roles.items():
+            roles_by_column.setdefault(
+                column,
+                [],
+            ).append(role)
+
+        duplicated_roles = {
+            column: roles
+            for column, roles in roles_by_column.items()
+            if len(roles) > 1
+        }
+
+        if duplicated_roles:
+            raise ValueError(
+                "outcome・segment・treatmentには"
+                "異なる列を指定してください: "
+                f"{duplicated_roles}"
+            )
+
+        overlap = (
+            set(self.covariates.columns)
+            & set(main_roles.values())
+        )
+
+        if overlap:
+            raise ValueError(
+                "covariatesにはoutcome・segment・"
+                "treatmentの列を指定できません: "
+                f"{sorted(overlap)}"
+            )
+
+        return self
