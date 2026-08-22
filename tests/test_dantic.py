@@ -68,3 +68,21 @@ def test_analysis_request_rejects_main_role_overlap(
         AnalysisRequest.model_validate(
             config,
         )
+        
+def test_analysis_request_rejects_binary_treatment_overlap(
+    config,
+):
+    config["treatment"] = {
+        "mode": "binary_column",
+        "column": "Q4_1",
+        "treated_value": 1,
+        "control_value": 0,
+    }
+
+    with pytest.raises(
+        ValidationError,
+        match="異なる列",
+    ):
+        AnalysisRequest.model_validate(
+            config,
+        )
