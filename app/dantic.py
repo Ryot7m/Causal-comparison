@@ -178,22 +178,6 @@ class MissingSpec(BaseModel):
             )
 
         return self
-
-
-class AnalysisRequest(BaseModel):
-    model_config = ConfigDict(
-        extra="forbid",
-        str_strip_whitespace=True,
-    )
-
-    schema_version: Literal["1"] = "1"
-    treatment: TreatmentSpec
-    outcome: OutcomeSpec
-    segment: SegmentSpec
-    covariates: CovariateSpec
-    missing: MissingSpec = Field(
-        default_factory=MissingSpec,
-    )
     
 class AnalysisRequest(BaseModel):
     model_config = ConfigDict(
