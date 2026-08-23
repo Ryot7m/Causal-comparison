@@ -111,3 +111,80 @@ def test_estimate_rejects_missing_columns(config):
 
     assert response.status_code == 400
     assert "必要な列" in response.json()["detail"]
+    
+def test_estimate_rejects_overlapping_column_roles(
+    config,
+):
+    config["covariates"]["columns"].append(
+        "Q4_1",
+    )
+
+    response = client.post(
+        "/api/estimate",
+        files={
+            "file": (
+                "data.csv",
+                b"x\n1\n",
+                "text/csv",
+            ),
+        },
+        data={
+            "config": json.dumps(config),
+        },
+    )
+
+    assert response.status_code == 422
+
+    errors = response.json()["detail"]
+
+    assert any(
+        "covariatesには" in error["msg"]
+        for error in errors
+    )
+
+
+def test_estimate_rejects_malformed_config_json():
+    response = client.post(
+        "/api/estimate",
+        files={
+            "file": (
+                "data.csv",
+                b"x\n1\n",
+                "text/csv",
+            ),
+        },
+        data={
+            "config": "{invalid-json",
+        },
+    )
+
+    assert response.status_code == 422
+
+    errors = response.json()["detail"]
+
+    assert any(
+        error["type"] == "json_invalid"
+        for error in errors
+    )
+
+
+def test_estimate_requires_config():
+    response = client.post(
+        "/api/estimate",
+        files={
+            "file": (
+                "data.csv",
+                b"x\n1\n",
+                "text/csv",
+            ),
+        },
+    )
+
+    assert response.status_code == 422
+
+    errors = response.json()["detail"]
+
+    assert any(
+        error["loc"][-1] == "config"
+        for error in errors
+    )
