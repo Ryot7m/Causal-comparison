@@ -113,10 +113,10 @@ def test_estimate_rejects_missing_columns(config):
     assert "必要な列" in response.json()["detail"]
     
 def test_estimate_rejects_overlapping_column_roles(
-    config,
+    config
 ):
     config["covariates"]["columns"].append(
-        "Q4_1",
+        "Q4_1"
     )
 
     response = client.post(
@@ -125,12 +125,12 @@ def test_estimate_rejects_overlapping_column_roles(
             "file": (
                 "data.csv",
                 b"x\n1\n",
-                "text/csv",
-            ),
+                "text/csv"
+            )
         },
         data={
-            "config": json.dumps(config),
-        },
+            "config": json.dumps(config)
+        }
     )
 
     assert response.status_code == 422
@@ -150,12 +150,12 @@ def test_estimate_rejects_malformed_config_json():
             "file": (
                 "data.csv",
                 b"x\n1\n",
-                "text/csv",
-            ),
+                "text/csv"
+            )
         },
         data={
-            "config": "{invalid-json",
-        },
+            "config": "{invalid-json"
+        }
     )
 
     assert response.status_code == 422
@@ -175,9 +175,9 @@ def test_estimate_requires_config():
             "file": (
                 "data.csv",
                 b"x\n1\n",
-                "text/csv",
-            ),
-        },
+                "text/csv"
+            )
+        }
     )
 
     assert response.status_code == 422
