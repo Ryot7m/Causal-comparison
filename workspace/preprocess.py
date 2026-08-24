@@ -39,6 +39,11 @@ def create_treatment(data, treatment):
         threshold = float(
             source.quantile(treatment.quantile)
         )
+        
+        if not np.isfinite(threshold):
+            raise ValueError(
+                "分位点処置の生成元に"
+                "有効な数値がありません。")
 
         comparisons = {
             "ge": source.ge,
