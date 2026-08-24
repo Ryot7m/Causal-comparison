@@ -34,7 +34,7 @@ def test_analysis_request_rejects_covariate_role_overlap(config, overlapping_col
         "section",
         "field",
         "overlapping_column"
-    )
+    ),
     [
         ("segment", "column", "Q4_1"),
         ("treatment", "source_column", "Q4_1"),
