@@ -96,7 +96,7 @@ def test_analysis_request_rejects_fill_values_for_non_fill(config, strategy):
         }
     }
 
-    with pytest.raises(ValidationError, match="fillの場合だけ"):
+    with pytest.raises(ValidationError, match="fill_valuesは"):
         AnalysisRequest.model_validate(config)
         
 def test_analysis_request_rejects_unknown_missing_strategy(config):
