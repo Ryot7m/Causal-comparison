@@ -188,3 +188,33 @@ def test_estimate_requires_config():
         error["loc"][-1] == "config"
         for error in errors
     )
+    
+def test_estimate_rejects_invalid_missing_config(
+    config,
+):
+    config["missing"] = {
+        "strategy": "fill",
+    }
+
+    response = client.post(
+        "/api/estimate",
+        files={
+            "file": (
+                "data.csv",
+                b"x\n1\n",
+                "text/csv",
+            ),
+        },
+        data={
+            "config": json.dumps(config),
+        },
+    )
+
+    assert response.status_code == 422
+
+    errors = response.json()["detail"]
+
+    assert any(
+        "fill_valuesを指定" in error["msg"]
+        for error in errors
+    )
