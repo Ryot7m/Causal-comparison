@@ -112,3 +112,74 @@ def test_analysis_request_rejects_unknown_missing_strategy(config):
         and error["loc"][-1] == "strategy"
         for error in exc_info.value.errors()
     )
+    
+def test_analysis_request_rejects_equal_binary_values(config):
+    config["treatment"] = {
+        "mode": "binary_column",
+        "column": "treatment",
+        "treated_value": "yes",
+        "control_value": "yes"
+    }
+
+    with pytest.raises(ValidationError,match="treated_valueとcontrol_value"):
+        AnalysisRequest.model_validate(config)
+        
+@pytest.mark.parametrize(
+    "quantile",
+    [
+        0,
+        1,
+        -0.1,
+        1.1,
+        float("nan"),
+        float("inf"),
+        float("-inf")
+    ])
+
+def test_analysis_request_rejects_invalid_quantile(config, quantile):
+    config["treatment"]["quantile"] = quantile
+
+    with pytest.raises(ValidationError) as exc_info:
+        AnalysisRequest.model_validate(config)
+
+    assert any(
+        error["loc"][-1] == "quantile"
+        for error in exc_info.value.errors())
+    
+def test_analysis_request_rejects_unknown_treated_when(config):
+    config["treatment"]["treated_when"] = "equal"
+
+    with pytest.raises(ValidationError) as exc_info:
+        AnalysisRequest.model_validate(config)
+
+    assert any(
+        error["type"] == "literal_error"
+        and error["loc"][-1] == "treated_when"
+        for error in exc_info.value.errors()
+    )
+    
+def test_analysis_request_rejects_unknown_treatment_mode(config):
+    config["treatment"] = {
+        "mode": "unsupported",
+        "column": "treatment"
+    }
+
+    with pytest.raises(ValidationError) as exc_info:
+        AnalysisRequest.model_validate(config)
+
+    assert any(
+        error["type"] == "union_tag_invalid"
+        for error in exc_info.value.errors()
+    )
+    
+def test_analysis_request_rejects_extra_treatment_field(config):
+    config["treatment"]["unexpected"] = "value"
+
+    with pytest.raises(ValidationError) as exc_info:
+        AnalysisRequest.model_validate(config)
+
+    assert any(
+        error["type"] == "extra_forbidden"
+        and error["loc"][-1] == "unexpected"
+        for error in exc_info.value.errors()
+    )
