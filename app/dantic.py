@@ -1,3 +1,4 @@
+from math import isfinite
 from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -106,6 +107,9 @@ class OutcomeSpec(BaseModel):
                 "levelsには重複しない値を"
                 "指定してください。"
             )
+        
+        if not all(isfinite(score) for score in self.scores):
+                raise ValueError("scoresには有限値を指定してください。")
 
         if any(
             left >= right
