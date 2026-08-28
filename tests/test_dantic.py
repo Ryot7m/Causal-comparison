@@ -183,3 +183,83 @@ def test_analysis_request_rejects_extra_treatment_field(config):
         and error["loc"][-1] == "unexpected"
         for error in exc_info.value.errors()
     )
+    
+def test_analysis_request_accepts_string_outcome_levels(config):
+    config["outcome"] = {
+        "column": "Q4_1",
+        "levels": [
+            "low",
+            "middle",
+            "high"
+        ],
+        "scores": [1.0, 2.0, 3.0]
+    }
+
+    request = AnalysisRequest.model_validate(config)
+
+    assert request.outcome.levels == [
+        "low",
+        "middle",
+        "high"
+    ]
+
+
+def test_analysis_request_rejects_outcome_length_mismatch(config):
+    config["outcome"]["scores"] = [1.0, 2.0]
+
+    with pytest.raises(ValidationError, match="長さを一致"):
+        AnalysisRequest.model_validate(config)
+
+
+def test_analysis_request_rejects_duplicate_outcome_levels(config):
+    config["outcome"]["levels"] = [1, 1, 2]
+
+    with pytest.raises(ValidationError, match="重複しない値"):
+        AnalysisRequest.model_validate(config)
+
+
+@pytest.mark.parametrize(
+    "scores",
+    [
+        [1.0, 1.0, 2.0],
+        [1.0, 3.0, 2.0],
+        [3.0, 2.0, 1.0]
+    ]
+)
+def test_analysis_request_rejects_non_increasing_scores(config, scores):
+    config["outcome"]["scores"] = scores
+
+    with pytest.raises(ValidationError, match="scoresは昇順"):
+        AnalysisRequest.model_validate(config)
+
+
+def test_analysis_request_rejects_too_few_outcome_levels(config):
+    config["outcome"] = {
+        "column": "Q4_1",
+        "levels": [1],
+        "scores": [1.0]
+    }
+
+    with pytest.raises(ValidationError) as exc_info:
+        AnalysisRequest.model_validate(config)
+
+    assert any(
+        error["type"] == "too_short"
+        and error["loc"][-1] == "levels"
+        for error in exc_info.value.errors()
+    )
+
+
+@pytest.mark.parametrize(
+    "invalid_score",
+    [
+        float("nan"),
+        float("inf"),
+        float("-inf")
+    ]
+)
+def test_analysis_request_rejects_non_finite_scores(config, invalid_score):
+    config["outcome"]["scores"] = [1.0, invalid_score, 3.0]
+
+    with pytest.raises(ValidationError, match="有限値"):
+        AnalysisRequest.model_validate(config)
