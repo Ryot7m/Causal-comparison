@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
 def oc_dr_cdf_by_seg(A, Y, nuis, seg, cap=None, level_labels=None):
     """
@@ -88,42 +87,3 @@ def oc_dr_cdf_by_seg(A, Y, nuis, seg, cap=None, level_labels=None):
                 "ci_high": tau + 1.96*se,
             })
     return pd.DataFrame(rows)
-
-def drcdf_plot(A0, Y0, nuis, seg0, levels):
-    # Y は 0..K-1 にエンコード済みのYを使う
-    # levelsを用いて、欠損値（NaN）を除いた一意（ユニーク）な値のリストを作成し、それを昇順に並べ替える（元の1..5など）
-
-    # if_c = 25
-    cdf_seg = oc_dr_cdf_by_seg(
-        A=A0, Y=Y0, nuis=nuis, seg=seg0,
-        cap=None,                 
-        level_labels=levels
-    )
-
-    print(cdf_seg) #必要なデータのみ抽出
-
-    for g in sorted(cdf_seg["seg"].unique()):
-        d = cdf_seg[cdf_seg["seg"] == g].sort_values("c")
-
-        plt.figure()
-        plt.plot(d["threshold"], d["F1_dr"], marker="o", label="満足群")
-        plt.plot(d["threshold"], d["F0_dr"], marker="o", label="不満足群")
-        plt.xlabel("他者推薦の点数のしきい値")
-        plt.ylabel("累積確率")
-        # plt.title(f"DR-CDF (seg={g})")
-        plt.legend()
-        plt.show()
-        
-    for g in sorted(cdf_seg["seg"].unique()):
-        d = cdf_seg[cdf_seg["seg"] == g].sort_values("c")
-
-        plt.figure()
-        plt.plot(d["threshold"], d["tau_c"], marker="o", label="DR-CDF")
-        plt.fill_between(d["threshold"], d["ci_low"], d["ci_high"], alpha=0.3, label="95%CI")
-        plt.xlabel("他者推薦の点数のしきい値")
-        plt.ylabel("満足群 - 不満足群")
-        # plt.title(f"DR-CDF (seg={g})")
-        plt.legend()
-        plt.show()
-        
-    return cdf_seg

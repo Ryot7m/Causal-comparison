@@ -39,6 +39,11 @@ def create_treatment(data, treatment):
         threshold = float(
             source.quantile(treatment.quantile)
         )
+        
+        if not np.isfinite(threshold):
+            raise ValueError(
+                "分位点処置の生成元に"
+                "有効な数値がありません。")
 
         comparisons = {
             "ge": source.ge,
@@ -98,6 +103,11 @@ def pre_analysis(data_, config):
     
     for col in config.categorical_cols:
         data[col] = data[col].astype("category")
+        
+    data[config.segment_col] = data[
+        config.segment_col
+        ].replace(list(config.segment_missing_values),
+                  np.nan)
 
     required = [
         config.treatment_col,
@@ -150,6 +160,20 @@ def pre_analysis(data_, config):
     S0 = S[ok]
     A0 = A[ok]
     Y0 = Y[ok].astype(int)
+    
+    groups, counts = np.unique(A0, return_counts=True)
+
+    group_counts = {
+        int(group): int(count)
+        for group, count in zip(groups, counts)
+    }
+
+    if set(group_counts) != {0, 1}:
+        raise ValueError(
+            "分析対象データには処置群（1）と"
+            "対照群（0）の両方が必要です。"
+            f"群別件数: {group_counts}"
+        )
     
     return {
         "seg" : config.segment_col,
