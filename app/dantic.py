@@ -146,6 +146,18 @@ class CovariateSpec(BaseModel):
 
     @model_validator(mode="after")
     def validate_categorical_columns(self):
+        if len(self.columns) != len(set(self.columns)):
+            raise ValueError(
+                "columnsには重複しない列を"
+                "指定してください。"
+            )
+
+        if len(self.categorical_columns) != len(set(self.categorical_columns)):
+            raise ValueError(
+                "categorical_columnsには重複しない列を"
+                "指定してください。"
+            )
+        
         unknown = (
             set(self.categorical_columns)
             - set(self.columns)
