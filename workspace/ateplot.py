@@ -1,6 +1,10 @@
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import japanize_matplotlib
+from pathlib import Path
+
+japanize_matplotlib.japanize()
 
 def _subset_nuis(nuis, idx):
     """nuis(dict) のうち、先頭次元がnの配列だけ idx で切る"""
@@ -72,19 +76,23 @@ def aipw_if_guard_plot(A, Y, s_values, nuis, cap, B=1000, seed=123, bins=30,
     ci_low, ci_high = np.percentile(boots, [2.5, 97.5])
 
     # 描画
-    plt.figure(figsize=(6.4, 4.8))
-    plt.hist(boots, bins=bins, density=True)
-    plt.axvline(ci_low, color="green")
-    plt.axvline(tau, color="red")
-    plt.axvline(ci_high, color="orange")
-    plt.xlabel("ATE")
-    plt.ylabel("density")
-    plt.title(title or f"ATEと95%信頼区間(IF-guard cap={cap}, B={B})")
-    plt.tight_layout()
+    fig, ax = plt.subplots(figsize=(6.4, 4.8))
+
+    ax.hist(boots, bins=bins, density=True)
+    ax.axvline(ci_low, color="green")
+    ax.axvline(tau, color="red")
+    ax.axvline(ci_high, color="orange")
+
+    ax.set_xlabel("ATE")
+    ax.set_ylabel("Density")
+    ax.set_title(title or f"ATE and 95% CI (cap={cap}, B={B})")
+
+    fig.tight_layout()
+
     if save_path is not None:
-        plt.savefig(save_path, dpi=200)
-    plt.show()
-    plt.close()
+        fig.savefig(save_path, dpi=200)
+
+    plt.close(fig)
 
     return {
         "ate": tau,
@@ -104,21 +112,35 @@ def plot_if_guard_seg(A, Y, s_values, nuis, seg, cap, B=1000, seed=123, bins=30,
     Y = np.asarray(Y).ravel()
     seg = np.asarray(seg).ravel()
 
+    if save_dir is not None:
+        save_dir = Path(save_dir)
+        save_dir.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+
     uniq = np.unique(seg)
     uniq = [g for g in uniq if g not in exclude_segs]
 
     results = []
+
     for j, g in enumerate(uniq):
-        idx = (seg == g)
+        idx = seg == g
+
         if idx.sum() == 0:
             continue
 
         nuis_g = _subset_nuis(nuis, idx)
 
-        title = f"ATEと95%信頼区間 正確性 クラス{int(g)}"
+        title = f"ATEと95%信頼区間 クラス{int(g)}"
+
         save_path = None
+
         if save_dir is not None:
-            save_path = f"{save_dir}/if_guard_seg{int(g)}.png"
+            save_path = (
+                save_dir
+                / f"if_guard_seg{int(g)}.png"
+            )
 
         out = aipw_if_guard_plot(
             A[idx], Y[idx], s_values, nuis_g,
@@ -130,11 +152,12 @@ def plot_if_guard_seg(A, Y, s_values, nuis, seg, cap, B=1000, seed=123, bins=30,
         out["n_control"] = int(np.sum(A[idx] == 0))
         results.append(out)
 
-    return pd.DataFrame(results).sort_values("seg").reset_index(drop=True)
+    return (pd.DataFrame(results).sort_values("seg").reset_index(drop=True))
 
 
-def ate_plot(A0, Y0, score, nuis, seg0, cap):
-    res_if_seg = plot_if_guard_seg(
-        A0, Y0, score, nuis, seg0,
-        cap, B=1000, seed=123, bins=30
-)
+def ate_plot(A0, Y0, score, nuis, seg0, cap, save_dir):
+    res_if_seg = plot_if_guard_seg(A0, Y0, score, nuis, seg0, cap, 
+                                   B=1000, seed=123, bins=30, 
+                                   exclude_segs=(-1,), save_dir= save_dir)
+    
+    return res_if_seg
