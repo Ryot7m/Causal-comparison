@@ -263,3 +263,79 @@ def test_analysis_request_rejects_non_finite_scores(config, invalid_score):
 
     with pytest.raises(ValidationError, match="有限値"):
         AnalysisRequest.model_validate(config)
+        
+def test_analysis_request_accepts_categorical_covariate(config,):
+    config["covariates"] = {
+        "columns": ["x1", "category"],
+        "categorical_columns": ["category"]
+    }
+
+    request = AnalysisRequest.model_validate(config)
+
+    assert request.covariates.categorical_columns == ["category"]
+
+
+def test_analysis_request_rejects_unknown_categorical_column(config):
+    config["covariates"]["categorical_columns"] = ["unknown_category"]
+
+    with pytest.raises(ValidationError, match="categorical_columnsはcolumnsに"):
+        AnalysisRequest.model_validate(config)
+
+
+def test_analysis_request_rejects_duplicate_covariates(config):
+    config["covariates"]["columns"] = ["x1", "x1"]
+
+    with pytest.raises(ValidationError, match="columnsには重複しない列"):
+        AnalysisRequest.model_validate(config)
+
+
+def test_analysis_request_rejects_duplicate_categorical_columns(config):
+    config["covariates"] = {
+        "columns": ["x1", "category"],
+        "categorical_columns": ["category", "category"]
+    }
+
+    with pytest.raises(ValidationError, match="categorical_columnsには重複しない列"):
+        AnalysisRequest.model_validate(config)
+
+
+def test_analysis_request_rejects_empty_covariates(config):
+    config["covariates"] = {
+        "columns": [],
+        "categorical_columns": []
+    }
+
+    with pytest.raises(ValidationError) as exc_info:
+        AnalysisRequest.model_validate(config)
+
+    assert any(
+        error["type"] == "too_short"
+        and error["loc"][-1] == "columns"
+        for error in exc_info.value.errors()
+    )
+
+
+def test_analysis_request_rejects_unknown_schema_version(config):
+    config["schema_version"] = "2"
+
+    with pytest.raises(ValidationError) as exc_info:
+        AnalysisRequest.model_validate(config)
+
+    assert any(
+        error["type"] == "literal_error"
+        and error["loc"][-1] == "schema_version"
+        for error in exc_info.value.errors()
+    )
+
+
+def test_analysis_request_rejects_extra_root_field(config):
+    config["unexpected"] = "value"
+
+    with pytest.raises(ValidationError) as exc_info:
+        AnalysisRequest.model_validate(config)
+
+    assert any(
+        error["type"] == "extra_forbidden"
+        and error["loc"][-1] == "unexpected"
+        for error in exc_info.value.errors()
+    )
