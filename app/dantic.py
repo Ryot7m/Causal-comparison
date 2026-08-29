@@ -1,3 +1,4 @@
+from math import isfinite
 from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -106,6 +107,9 @@ class OutcomeSpec(BaseModel):
                 "levelsには重複しない値を"
                 "指定してください。"
             )
+        
+        if not all(isfinite(score) for score in self.scores):
+                raise ValueError("scoresには有限値を指定してください。")
 
         if any(
             left >= right
@@ -142,6 +146,18 @@ class CovariateSpec(BaseModel):
 
     @model_validator(mode="after")
     def validate_categorical_columns(self):
+        if len(self.columns) != len(set(self.columns)):
+            raise ValueError(
+                "columnsには重複しない列を"
+                "指定してください。"
+            )
+
+        if len(self.categorical_columns) != len(set(self.categorical_columns)):
+            raise ValueError(
+                "categorical_columnsには重複しない列を"
+                "指定してください。"
+            )
+        
         unknown = (
             set(self.categorical_columns)
             - set(self.columns)
