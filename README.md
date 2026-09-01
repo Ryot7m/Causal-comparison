@@ -1,6 +1,6 @@
 # Causal Inference Platform
 
-因果推論アルゴリズムを、FastAPIとDockerを用いてAPI化した分析プラットフォームです。
+CSVファイルと分析設定JSONを送信すると、因果推論分析を実行するAPI
 
 CSVをアップロードすると
 
@@ -11,7 +11,7 @@ CSVをアップロードすると
 
 これらの評価を確認できます。
 
-分析結果はJSON形式で返され、Swagger UIからCSVファイルをアップロードしてAPIを実行できます。
+Swagger UIからCSVファイルと分析設定JSONを指定して実行できます。
 
 本プロジェクトは、前処理、推定、レスポンス生成までを一連の分析パイプラインとして構築しています。
 
@@ -51,7 +51,7 @@ docker compose up --build
 ```text
 Client
   │
-  │ CSV Upload
+  │ CSV Upload + config(JSON)
   ▼
 app/main.py
 FastAPI Application
@@ -144,40 +144,56 @@ multipart/form-data
 | パラメータ | 型 | 説明 |
 |------------|----|------|
 | file | CSVファイル | 分析対象のデータセット |
+| config | JSON文字列 | 処置・outcome・segment・交絡変数・欠損処理の設定 |
+
+| 項目 | ルール |
+|---|---|
+| `treatment.mode` | `binary_column` または `quantile` |
+| `quantile` | `0 < quantile < 1`の有限値 |
+| `treated_when` | `ge` / `gt` / `le` / `lt` |
+| `outcome.levels` | 2件以上、重複なし。文字列も可 |
+| `outcome.scores` | levelsと同数、有限値、昇順 |
+| `covariates.columns` | 1件以上、重複なし |
+| `categorical_columns` | `columns`の部分集合、重複なし |
+| 列の役割 | outcome・segment・treatment・covariatesで重複不可 |
+| `missing.strategy` | `drop` / `zero` / `fill` |
+| `fill_values` | `strategy: "fill"`の場合のみ指定可。交絡変数のみ対象 |
+
+| strategy | 動作 |
+|---|---|
+| `drop` | 必須列に欠損がある行を分析対象から除外 |
+| `zero` | 交絡変数だけを0で補完し、その他の必須列の欠損行は除外 |
+| `fill` | `fill_values`で指定した交絡変数だけを列別の値で補完 |
 
 ### レスポンス
 
 ```json
 {
-  "segment": {
-    "cut1": 2.41,
-    "cut2": 3.78
+  "schema_version": "1",
+  "treatment": {
+    "mode": "quantile",
+    "source_column": "exposure_score",
+    "quantile": 0.75,
+    "treated_when": "ge"
   },
-  "ate": [
-    {
-      "cls": 0,
-      "clsnum": 120,
-      "ate": 0.18,
-      "se": 0.07,
-      "ci_low": 0.04,
-      "ci_high": 0.32
+  "outcome": {
+    "column": "recommendation",
+    "levels": ["low", "middle", "high"],
+    "scores": [1.0, 2.0, 3.0]
+  },
+  "segment": {
+    "column": "expectation",
+    "missing_values": ["未回答"]
+  },
+  "covariates": {
+    "columns": ["age", "region"],
+    "categorical_columns": ["region"]
+  },
+  "missing": {
+    "strategy": "fill",
+    "fill_values": {
+      "age": 0
     }
-  ],
-  "drcdf": [
-    {
-      "seg": 0,
-      "c": 0,
-      "threshold": 1.0,
-      "F1_dr": 0.12,
-      "F0_dr": 0.18,
-      "tau_c": -0.06,
-      "se_c": 0.03,
-      "ci_low": -0.12,
-      "ci_high": 0.0
-    }
-  ],
-  "hei": {
-    "score": 0.42
   }
 }
 ```
@@ -188,15 +204,16 @@ multipart/form-data
 |------|------|
 | segment | 推定されたセグメント境界 |
 | ate | セグメントごとの平均処置効果（ATE） |
-| drcdf | DR-CDFによる処置効果分布 |
+| drcdf | DR-CDFによる処置効果分布 (threshold: 対応するoutcome levelの値。数値または文字列。) |
 | hei | 異質性評価指標（HEI） |
 
 ### エラーレスポンス
 
-| ステータスコード | 内容 |
-|-----------------|------|
-| 400 | 入力データに必要な列が存在しないなどの入力エラー |
-| 500 | サーバ内部で予期しないエラーが発生 |
+| ステータス | 内容 |
+|---|---|
+| 400 | configは正しいが、CSVの必要列不足・未定義outcome・処置群または対照群の不足など、データ内容に問題がある |
+| 422 | `config`の欠落、JSON不正、schema不正、列の役割重複など、リクエスト設定が不正 |
+| 500 | 想定外のサーバ内部エラー |
 
 ## テスト
 
@@ -330,7 +347,9 @@ HEI
 
 ## 評価結果
 
-本研究では、提案手法の有効性を評価するため、既存手法である Causal Clustering と比較を行いました。同一データセット・同一評価指標（ATE、DR-CDF、HEI、SMD、ESS）を用いて性能を比較しています。
+- 本研究では、提案手法の有効性を評価するため、既存手法である Causal Clustering と比較を行いました。同一データセット・同一評価指標（ATE、DR-CDF、HEI、SMD、ESS）を用いて性能を比較しています。
+- 以下は、本リポジトリで使用したデータセットおよび設定における実験結果です。
+他のデータセットや条件でも同じ結果を保証するものではありません。
 
 評価指標
 
