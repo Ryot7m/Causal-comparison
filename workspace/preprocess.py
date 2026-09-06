@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from app.dantic import QuantileTreatment
 from dataclasses import dataclass
 
 @dataclass(frozen=True)
@@ -8,12 +9,13 @@ class TreatmentResult:
     threshold: float | None = None
 
 def create_treatment(data, treatment):
+
     if treatment.mode == "binary_column":
         source = data[treatment.column]
 
         allowed = {
             treatment.treated_value,
-            treatment.control_value,
+            treatment.control_value
         }
 
         unknown = set(source.dropna().unique()) - allowed
@@ -24,7 +26,7 @@ def create_treatment(data, treatment):
 
         return TreatmentResult(values=source.map({
             treatment.control_value: 0,
-            treatment.treated_value: 1,
+            treatment.treated_value: 1
         }))
 
     if treatment.mode == "quantile":
@@ -49,7 +51,7 @@ def create_treatment(data, treatment):
             "ge": source.ge,
             "gt": source.gt,
             "le": source.le,
-            "lt": source.lt,
+            "lt": source.lt
         }
 
         values = comparisons[
@@ -68,8 +70,15 @@ def create_treatment(data, treatment):
 def pre_analysis(data_, config):
     data = data_.copy()
     
+    treatment = QuantileTreatment(
+        mode="quantile",
+        source_column="exposure_score",
+        quantile=0.5,
+        treated_when="ge"
+        )
+    
     treatment_result = create_treatment(
-        data, config.treatment,
+        data, treatment
     )
 
     data[config.treatment_col] = (
@@ -113,7 +122,7 @@ def pre_analysis(data_, config):
         config.treatment_col,
         config.outcome_col,
         config.segment_col,
-        *confounder,
+        *confounder
     ]
     data = data.dropna(subset=required).copy()
 
