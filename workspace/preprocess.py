@@ -72,7 +72,7 @@ def pre_analysis(data_, config):
     
     treatment = QuantileTreatment(
         mode="quantile",
-        source_column="exposure_score",
+        source_column="Q2_10",
         quantile=0.5,
         treated_when="ge"
         )
