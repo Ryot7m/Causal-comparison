@@ -70,15 +70,8 @@ def create_treatment(data, treatment):
 def pre_analysis(data_, config):
     data = data_.copy()
     
-    treatment = QuantileTreatment(
-        mode="quantile",
-        source_column="Q2_10",
-        quantile=0.5,
-        treated_when="ge"
-        )
-    
     treatment_result = create_treatment(
-        data, treatment
+        data, config.treatment
     )
 
     data[config.treatment_col] = (

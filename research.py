@@ -68,36 +68,36 @@ class ResearchConfig:
     fill_values: dict = field(
         default_factory=dict
     )
-@dataclass
-class AnalysisConfig:
-    treatment_col: str
-    outcome_col: str
-    segment_col: str
-    confounder_cols: list[str] | None = None
-    state_col: str | None = None
-    threshold: float | None = None
-    exclude_cols: list[str] = field(default_factory=list)
-    exclude_conditions: list[str] = field(default_factory=list)
-    treatment_source_col: str | None = None
+# @dataclass
+# class AnalysisConfig:
+#     treatment_col: str
+#     outcome_col: str
+#     segment_col: str
+#     confounder_cols: list[str] | None = None
+#     state_col: str | None = None
+#     threshold: float | None = None
+#     exclude_cols: list[str] = field(default_factory=list)
+#     exclude_conditions: list[str] = field(default_factory=list)
+#     treatment_source_col: str | None = None
 
-    #欠損処理の選択
-    missing_type: Literal["drop", "zero"] = "zero"
-    zero_fill: list[str] | None = None
+#     #欠損処理の選択
+#     missing_type: Literal["drop", "zero"] = "zero"
+#     zero_fill: list[str] | None = None
 
-    outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])
-    score_values: list[float] = field(
-        default_factory=lambda: [1, 2, 3, 4, 5]
-    )
-    reverse_score_max: dict[str, float] = field(default_factory=dict)
-    segment_missing_values: tuple = ()
-    weight_cap: float = 100.0
+#     outcome_levels: list = field(default_factory=lambda: [1, 2, 3, 4, 5])
+#     score_values: list[float] = field(
+#         default_factory=lambda: [1, 2, 3, 4, 5]
+#     )
+#     reverse_score_max: dict[str, float] = field(default_factory=dict)
+#     segment_missing_values: tuple = ()
+#     weight_cap: float = 100.0
 
 
 config = ResearchConfig(
     treatment=ResearchTreatment(mode="quantile", source_column="Q2_9", quantile=0.75, treated_when="ge"),
     outcome_col="Q4_1",
     segment_col="Q7_4",
-    confounder_cols=["SQ1","SQ3","SQ8","Q5_2","Q12_2","Q14_2","Q28","Q29","Q30","Q31","Q38","Q39","Q41"],
+    confounder_cols=None,
     categorical_cols=[],
     missing_type="zero",
     fill_values={}
