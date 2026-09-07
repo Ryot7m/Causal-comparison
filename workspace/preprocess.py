@@ -1,6 +1,5 @@
 import pandas as pd
 import numpy as np
-from app.dantic import QuantileTreatment
 from dataclasses import dataclass
 
 @dataclass(frozen=True)

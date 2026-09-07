@@ -97,7 +97,7 @@ config = ResearchConfig(
     treatment=ResearchTreatment(mode="quantile", source_column="Q2_9", quantile=0.75, treated_when="ge"),
     outcome_col="Q4_1",
     segment_col="Q7_4",
-    confounder_cols=None,
+    confounder_cols=["SQ1","SQ3","SQ8","Q5_2","Q12_2","Q14_2","Q28","Q29","Q30","Q31","Q38","Q39","Q41"],
     categorical_cols=[],
     missing_type="zero",
     fill_values={}
