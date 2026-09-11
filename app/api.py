@@ -10,8 +10,7 @@ router = APIRouter(
 
 @router.post("/estimate", response_model=EstimateResponse)
 
-async def estimate(file: Annotated[UploadFile, File(...)]):
-    config = {"schema_version":"1","treatment":{"mode":"quantile","source_column":"exposure_score","quantile":0.5,"treated_when":"ge"},"outcome":{"column":"recommendation","levels":["low","middle","high"],"scores":[1.0,2.0,3.0]},"segment":{"column":"expectation","missing_values":[]},"covariates":{"columns":["age","region"],"categorical_columns":["region"]},"missing":{"strategy":"drop"}}
+async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str, Form(...)]):
     
     try:
         request_config = (
