@@ -2,6 +2,9 @@ from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from typing import Annotated
 from app.dantic import AnalysisRequest,EstimateResponse
 from app.analysis import estimate_service
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(
     prefix="/api",
@@ -36,6 +39,7 @@ async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str
         )
         
     except Exception:
+        logger.exception("estimate endpoint failed")
         raise HTTPException(
             status_code=500,
             detail="Internal Server Error"
