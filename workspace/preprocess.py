@@ -154,9 +154,19 @@ def pre_analysis(data_, config):
     # K = len(levels_sorted)
     
     ok = ~pd.isna(S)
-    X_df0 = pd.get_dummies(data.loc[ok, confounder], drop_first=False)
-    feature_names = list(X_df0.columns)
-    X0 = X_df0.values
+    covariate_df = data[confounder].copy()
+
+    categorical_cols = list(getattr(config, "categorical_cols", []))
+    categorical_cols = [col for col in categorical_cols if col in covariate_df.columns]
+
+    X_df = pd.get_dummies(
+        covariate_df,
+        columns=categorical_cols,
+        dtype=float
+    )
+    X0 = X_df.to_numpy(dtype=float)
+    feature_names = X_df.columns.tolist()
+    # X0 = X_df.values
     
     S0 = S[ok]
     A0 = A[ok]
