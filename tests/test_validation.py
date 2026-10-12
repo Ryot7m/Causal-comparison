@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 from workspace.aipw import fit_cf_oc, oc_aipw_ate
 
@@ -75,12 +76,13 @@ def make_synthetic_data(
 
 ATE_TOLERANCE = 0.1  # 仮の値。推定誤差を確認して調整する
 
-
-def test_cf_oc_aipw_recovers_known_effect():
+@pytest.mark.parametrize("effect", [0.0, 0.8])
+def test_cf_oc_aipw_recovers_known_effect(effect):
     data, true_ate = make_synthetic_data(
         n=10_000,
         seed=2026,
         effect=0.8,
+        effect=effect
     )
 
     X = pd.get_dummies(
@@ -121,3 +123,6 @@ def test_cf_oc_aipw_recovers_known_effect():
 
     assert estimated_ate > 0
     assert abs(estimated_ate - true_ate) < ATE_TOLERANCE
+    
+    if effect > 0:
+        assert estimated_ate > 0
