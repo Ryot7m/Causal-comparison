@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from workspace.aipw import fit_cf_oc, oc_aipw_ate
 
 def _softmax(logits: np.ndarray) -> np.ndarray:
     shifted = logits - logits.max(axis=1, keepdims=True)
@@ -78,8 +79,7 @@ def test_cf_oc_aipw_recovers_known_effect(effect):
     data, true_ate = make_synthetic_data(
         n=10_000,
         seed=2026,
-        effect=0.8,
-        effect=effect
+        effect=0.8
     )
 
     X = pd.get_dummies(
