@@ -1,0 +1,39 @@
+{
+  "treatment": {
+    "mode": "quantile",
+    "source_column": "Q2_9",
+    "quantile": 0.75,
+    "treated_when": "ge"
+  },
+  "outcome": {
+    "column": "Q4_1",
+    "levels": [1, 2, 3, 4, 5],
+    "scores": [1.0, 2.0, 3.0, 4.0, 5.0]
+  },
+  "segment": {
+    "column": "Q7_4",
+    "missing_values": []
+  },
+  "covariates": {
+    "columns": [
+      "SQ1",
+      "SQ3",
+      "SQ8",
+      "Q5_2",
+      "Q12_2",
+      "Q14_2",
+      "Q28",
+      "Q29",
+      "Q30",
+      "Q31",
+      "Q38",
+      "Q39",
+      "Q41"
+    ],
+    "categorical_columns": []
+  },
+  "missing": {
+    "strategy": "zero",
+    "fill_values": {}
+  }
+}
