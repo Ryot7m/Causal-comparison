@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 
 
 def _softmax(logits: np.ndarray) -> np.ndarray:
@@ -68,5 +69,57 @@ def make_synthetic_data(
 
     # このデータにおける、生成モデル上の正解ATE
     true_ate = float(np.mean(expected_y1 - expected_y0))
-
     return data, true_ate
+
+ATE_TOLERANCE = 0.1  # 仮の値。推定誤差を確認して調整する
+
+@pytest.mark.parametrize("effect", [0.0, 0.8])
+def test_cf_oc_aipw_recovers_known_effect(effect):
+    data, true_ate = make_synthetic_data(
+        n=10_000,
+        seed=2026,
+        effect=0.8,
+        effect=effect
+    )
+
+    X = pd.get_dummies(
+        data[["age", "region"]],
+        columns=["region"],
+        dtype=float,
+    ).to_numpy(dtype=float)
+
+    A = data["treatment"].to_numpy(dtype=int)
+    Y = pd.Categorical(
+        data["outcome"],
+        categories=["low", "middle", "high"],
+        ordered=True,
+    ).codes
+
+    score_values = np.array([1.0, 2.0, 3.0])
+
+    nuisance = fit_cf_oc(
+        X=X,
+        A=A,
+        Y=Y,
+        s_values=score_values,
+        n_splits=5,
+        random_state=2026,
+    )
+
+    result = oc_aipw_ate(
+        A=A,
+        Y=Y,
+        s_values=score_values,
+        nuisance=nuisance,
+        seg=np.zeros(len(data), dtype=int),
+        cap=None,
+    )
+
+    row = result.iloc[0]
+    estimated_ate = float(row["ate"])
+
+    assert estimated_ate > 0
+    assert abs(estimated_ate - true_ate) < ATE_TOLERANCE
+    
+    if effect > 0:
+        assert estimated_ate > 0
