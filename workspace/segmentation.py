@@ -350,3 +350,26 @@ def segmentation_rtn(S, feature_names, A, X, idx_est, config):
         "cut1" : cut1,
         "cut2" : cut2
     }
+    
+def select_segment_cuts(S, A, X, config):
+    rank_design = rank_cuts_design_optimal(
+        S=S,
+        A=A,
+        X=X,
+        min_total_per_seg=100,
+        min_each_treat_per_seg=10,
+        cap_weight=config.weight_cap,
+        ps_kwargs={
+            "C": 0.5,
+            "calibration": "isotonic",
+        },
+    )
+
+    if rank_design.empty:
+        raise ValueError("条件を満たす3セグメントを作れません。")
+
+    best = rank_design.iloc[0]
+    return {
+        "cut1": best["cut1"],
+        "cut2": best["cut2"]
+    }
