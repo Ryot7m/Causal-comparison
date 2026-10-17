@@ -101,11 +101,12 @@ def estimate(data, config):
     idx_y = prcs["Y"][idx_est]
     
     slc = select_segment_cuts(prcs["S"][idx_design], prcs["A"][idx_design], prcs["X"][idx_design], config)
-    sgm = segmentation_rtn(prcs["S"][idx_design], prcs["ftr"], prcs["A"][idx_design], prcs["X"][idx_design], idx_est, slc, config)
+    sgm = segmentation_rtn(prcs["S"][idx_design], prcs["ftr"], prcs["A"][idx_design], prcs["X"][idx_design], config)
     seg_est = make_seg_from_cuts(prcs["S"][idx_est], slc["cut1"], slc["cut2"])
     ate = aipw_ate(idx_x, idx_a, idx_y, sgm["seg0"], prcs["score"], config.weight_cap)
     dr_cdf = oc_dr_cdf_by_seg(idx_a, idx_y, ate["nuis"], sgm["seg0"], None, prcs["level"])
-    hei = hei_result(ate["nuis"], idx_a, idx_y, idx_s ,sgm["per_seg"], prcs["score"])
+    # hei = hei_result(ate["nuis"], idx_a, idx_y, idx_s ,sgm["per_seg"], prcs["score"])
+    hei = None
     
     return {
 
