@@ -268,7 +268,7 @@ def segmentation_rtn(S, feature_names, A, X, idx_est, cuts, config):
 
     # X は numpy なので列名が消えている。dummiesの列名を復元する
 
-    seg0 = make_seg_from_cuts(S[idx_est], cuts["cut1"], cuts["cut2"])
+    seg0 = make_seg_from_cuts(S, cut1, cut2)
     per_seg_summary = []
     all_rows = []
 
