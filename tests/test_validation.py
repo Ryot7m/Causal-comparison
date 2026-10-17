@@ -79,7 +79,7 @@ def test_cf_oc_aipw_recovers_known_effect(effect):
     data, true_ate = make_synthetic_data(
         n=10_000,
         seed=2026,
-        effect=0.8
+        effect=effect
     )
 
     X = pd.get_dummies(
@@ -120,6 +120,7 @@ def test_cf_oc_aipw_recovers_known_effect(effect):
 
     assert estimated_ate > 0
     assert abs(estimated_ate - true_ate) < ATE_TOLERANCE
+    assert row["ci_low"] <= true_ate <= row["ci_high"]
     
     if effect > 0:
         assert estimated_ate > 0
