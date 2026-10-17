@@ -234,7 +234,7 @@ def ess_class(w: np.ndarray):
     s2 = np.sum(w * w)
     return float((s1 * s1) / s2) if s2 > 0 else np.nan
 
-def segmentation_rtn(S, feature_names, A, X, config):
+def segmentation_rtn(S, feature_names, A, X, idx_est, config):
       # 0埋めしている場合は欠損扱いへ
 
     ps_kwargs_design = dict(
@@ -268,7 +268,7 @@ def segmentation_rtn(S, feature_names, A, X, config):
 
     # X は numpy なので列名が消えている。dummiesの列名を復元する
 
-    seg0 = make_seg_from_cuts(S, cut1, cut2)
+    seg0 = make_seg_from_cuts(S[idx_est], cut1, cut2)
     per_seg_summary = []
     all_rows = []
 

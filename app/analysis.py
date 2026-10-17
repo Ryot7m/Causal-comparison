@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 from io import StringIO
 from app.dantic import AnalysisRequest
 from dataclasses import dataclass, field
@@ -9,6 +10,10 @@ from workspace.hei import hei_result
 from workspace.preprocess import pre_analysis
 from typing import Literal
 from fastapi import UploadFile
+from sklearn.model_selection import train_test_split
+from workspace.segmentation import make_seg_from_cuts
+
+
 
 async def load_csv(file: UploadFile) -> pd.DataFrame:
 
@@ -82,9 +87,15 @@ def to_analysis_config(
     
 def estimate(data, config):
 
-    prcs = pre_analysis(data, config) 
-    sgm = segmentation_rtn(prcs["S"], prcs["ftr"], prcs["A"], prcs["X"], config)
-    ate = aipw_ate(prcs["X"], prcs["A"], prcs["Y"], sgm["seg0"], prcs["score"], config.weight_cap)
+    prcs = pre_analysis(data, config)
+    idx_design, idx_est = train_test_split(
+        np.arange(len(prcs["A"])),
+        test_size=0.5,
+        random_state=123,
+        stratify=prcs["A"]
+    ) 
+    sgm = segmentation_rtn(prcs["S"][idx_design], prcs["ftr"], prcs["A"][idx_design], prcs["X"][idx_design], idx_est, config)
+    ate = aipw_ate(prcs["X"][idx_est], prcs["A"][idx_est], prcs["Y"][idx_est], sgm["seg0"], prcs["score"], config.weight_cap)
     dr_cdf = oc_dr_cdf_by_seg(prcs["A"], prcs["Y"], ate["nuis"], sgm["seg0"], None, prcs["level"])
     hei = hei_result(ate["nuis"], prcs["A"], prcs["Y"], prcs["S"] ,sgm["per_seg"], prcs["score"])
     
