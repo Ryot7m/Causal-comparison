@@ -107,6 +107,7 @@ def estimate(data, config):
     dr_cdf = oc_dr_cdf_by_seg(idx_a, idx_y, ate["nuis"], seg_est, None, prcs["level"])
     # hei = hei_result(ate["nuis"], idx_a, idx_y, idx_s ,sgm["per_seg"], prcs["score"])
     hei = None
+    print("選ばれた境界:", slc)
     
     return {
 

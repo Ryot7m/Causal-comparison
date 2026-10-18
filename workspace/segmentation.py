@@ -356,7 +356,7 @@ def select_segment_cuts(S, A, X, config):
         S=S,
         A=A,
         X=X,
-        min_total_per_seg=100,
+        min_total_per_seg=200,
         min_each_treat_per_seg=10,
         cap_weight=config.weight_cap,
         ps_kwargs={
@@ -364,6 +364,15 @@ def select_segment_cuts(S, A, X, config):
             "calibration": "isotonic",
         },
     )
+    
+    seg_manual = np.select(
+    [S <= 1, S <= 2],
+    [0, 1],
+    default=2,)
+
+    print("各セグメントの件数:", np.unique(seg_manual, return_counts=True))
+    print("セグメントごとの処置群・対照群:")
+    print(pd.crosstab(seg_manual, A))
 
     if rank_design.empty:
         raise ValueError("条件を満たす3セグメントを作れません。")
