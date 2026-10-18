@@ -101,7 +101,7 @@ def estimate(data, config):
     idx_y = prcs["Y"][idx_est]
     
     slc = select_segment_cuts(prcs["S"][idx_design], prcs["A"][idx_design], prcs["X"][idx_design], config)
-    sgm = segmentation_rtn(prcs["S"][idx_design], prcs["ftr"], prcs["A"][idx_design], prcs["X"][idx_design], config)
+    # sgm = segmentation_rtn(prcs["S"][idx_design], prcs["ftr"], prcs["A"][idx_design], prcs["X"][idx_design], config)
     seg_est = make_seg_from_cuts(prcs["S"][idx_est], slc["cut1"], slc["cut2"])
     ate = aipw_ate(idx_x, idx_a, idx_y, seg_est, prcs["score"], config.weight_cap)
     dr_cdf = oc_dr_cdf_by_seg(idx_a, idx_y, ate["nuis"], seg_est, None, prcs["level"])
@@ -110,7 +110,7 @@ def estimate(data, config):
     
     return {
 
-        "segment": sgm,
+        "segment": slc,
         "ate": ate,
         "drcdf": dr_cdf,
         "hei" : hei
@@ -130,9 +130,8 @@ def create_response(result):
 
         "drcdf": result["drcdf"].to_dict(orient = "records"),
 
-        "hei": {
-            "score" : result["hei"]
-        }
+        # create_response()
+        "hei": None if result["hei"] is None else {"score": result["hei"]}
     }
     
 async def estimate_service(
