@@ -38,7 +38,8 @@ class EstimateResponse(BaseModel):
 
     drcdf: list[DrcdfResult]
 
-    hei: HeiResult
+    # EstimateResponse
+    hei: HeiResult | None = None
 
 class BinaryColumnTreatment(BaseModel):
     model_config = ConfigDict(extra="forbid")
