@@ -40,6 +40,7 @@ class AnalysisConfig:
     
     categorical_cols: list[str] = field(default_factory=list)
     fill_values: dict = field(default_factory=dict)
+    split_random_state: int = 123
     
 def validate_data(data: pd.DataFrame, config: AnalysisConfig):
 
@@ -63,9 +64,7 @@ def validate_data(data: pd.DataFrame, config: AnalysisConfig):
         )
     
 
-def to_analysis_config(
-    request: AnalysisRequest,
-) -> AnalysisConfig:
+def to_analysis_config(request: AnalysisRequest) -> AnalysisConfig:
     config = AnalysisConfig(
         treatment=request.treatment,
         outcome_col=request.outcome.column,
@@ -81,6 +80,7 @@ def to_analysis_config(
         ),
         missing_type=request.missing.strategy,
         fill_values=request.missing.fill_values,
+        split_random_state=request.split_random_state
     )
     
     return config
@@ -89,11 +89,11 @@ def estimate(data, config):
 
     prcs = pre_analysis(data, config)
     idx_design, idx_est = train_test_split(
-        np.arange(len(prcs["A"])),
-        test_size=0.5,
-        random_state=123,
-        stratify=prcs["A"]
-    ) 
+    np.arange(len(prcs["A"])),
+    test_size=0.5,
+    random_state=config.split_random_state,
+    stratify=prcs["A"]
+) 
     
     idx_s = prcs["S"][idx_est]
     idx_a = prcs["A"][idx_est]
