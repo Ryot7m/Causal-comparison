@@ -257,7 +257,7 @@ def segmentation_rtn(S, feature_names, A, X, config):
                 "サンプル数・各群の最小人数・セグメント変数を見直してください。")
         
     best = rank_design.iloc[0]
-
+    print(best)
     cut1, cut2 = best["cut1"], best["cut2"]
     seg_opt = make_seg_from_cuts(S, cut1, cut2)
     print("best cuts:", cut1, cut2)

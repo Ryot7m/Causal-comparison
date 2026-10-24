@@ -100,18 +100,20 @@ def estimate(data, config):
     idx_x = prcs["X"][idx_est]
     idx_y = prcs["Y"][idx_est]
     
-    slc = select_segment_cuts(prcs["S"][idx_design], prcs["A"][idx_design], prcs["X"][idx_design], config)
-    # sgm = segmentation_rtn(prcs["S"][idx_design], prcs["ftr"], prcs["A"][idx_design], prcs["X"][idx_design], config)
-    seg_est = make_seg_from_cuts(prcs["S"][idx_est], slc["cut1"], slc["cut2"])
+    S_design = prcs["S"][idx_design]
+    A_design = prcs["A"][idx_design]
+    
+    # slc = select_segment_cuts(prcs["S"][idx_design], prcs["A"][idx_design], prcs["X"][idx_design], config)
+    sgm = segmentation_rtn(prcs["S"][idx_design], prcs["ftr"], prcs["A"][idx_design], prcs["X"][idx_design], config)
+    seg_est = make_seg_from_cuts(prcs["S"][idx_est], sgm["cut1"], sgm["cut2"])
     ate = aipw_ate(idx_x, idx_a, idx_y, seg_est, prcs["score"], config.weight_cap)
     dr_cdf = oc_dr_cdf_by_seg(idx_a, idx_y, ate["nuis"], seg_est, None, prcs["level"])
     # hei = hei_result(ate["nuis"], idx_a, idx_y, idx_s ,sgm["per_seg"], prcs["score"])
     hei = None
-    print("選ばれた境界:", slc)
     
     return {
 
-        "segment": slc,
+        "segment": sgm,
         "ate": ate,
         "drcdf": dr_cdf,
         "hei" : hei
