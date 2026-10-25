@@ -249,7 +249,7 @@ def segmentation_rtn(S, feature_names, A, X, config):
         ps_kwargs=ps_kwargs_design
     )
 
-    print(rank_design.head(10))
+    print(rank_design.head(5).to_string(index=False))
 
     if rank_design.empty:
             raise ValueError(
@@ -326,7 +326,7 @@ def segmentation_rtn(S, feature_names, A, X, config):
         all_rows.append(tmp)
 
     per_seg_df = pd.DataFrame(per_seg_summary).sort_values("seg")
-    print(per_seg_df)
+    # print(per_seg_df)
 
     # all_smd = pd.concat(all_rows, ignore_index=True)
 
