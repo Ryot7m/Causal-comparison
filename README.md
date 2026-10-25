@@ -158,6 +158,7 @@ multipart/form-data
 | 列の役割 | outcome・segment・treatment・covariatesで重複不可 |
 | `missing.strategy` | `drop` / `zero` / `fill` |
 | `fill_values` | `strategy: "fill"`の場合のみ指定可。交絡変数のみ対象 |
+| `split_random_state` | 省略時は`123`。設計用・推定用データの分割に使う乱数シード |
 
 | strategy | 動作 |
 |---|---|
@@ -344,6 +345,10 @@ HEI
 4. **HEI（Heterogeneity Evaluation Index）**
    - セグメント間の異質性を定量評価
    - 提案手法と比較手法の性能比較に利用
+
+5. **セグメント選択と効果推定のデータ分割**
+   - 分析データは処置群・対照群の割合を保って2分割します。設計用データで、アウトカムを使わずにセグメント境界を選択
+   - 分割には固定乱数シードを使用するため、同じ入力データと設定であれば分割を再現
 
 ## 評価結果
 

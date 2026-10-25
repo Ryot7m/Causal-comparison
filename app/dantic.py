@@ -33,13 +33,11 @@ class HeiResult(BaseModel):
 class EstimateResponse(BaseModel):
 
     segment: SegmentResult
-
     ate: list[AteResult]
-
     drcdf: list[DrcdfResult]
-
-    hei: HeiResult
-
+    # EstimateResponse
+    hei: HeiResult | None = None
+    split_random_state: int
 class BinaryColumnTreatment(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -206,9 +204,8 @@ class AnalysisRequest(BaseModel):
     outcome: OutcomeSpec
     segment: SegmentSpec
     covariates: CovariateSpec
-    missing: MissingSpec = Field(
-        default_factory=MissingSpec,
-    )
+    missing: MissingSpec = Field(default_factory=MissingSpec)
+    split_random_state: int = Field(default=123, ge=0, le=2**32 - 1)
 
     @model_validator(mode="after")
     def validate_column_roles(self):
