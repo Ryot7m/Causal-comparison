@@ -33,14 +33,11 @@ class HeiResult(BaseModel):
 class EstimateResponse(BaseModel):
 
     segment: SegmentResult
-
     ate: list[AteResult]
-
     drcdf: list[DrcdfResult]
-
     # EstimateResponse
     hei: HeiResult | None = None
-
+    split_random_state: int
 class BinaryColumnTreatment(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
