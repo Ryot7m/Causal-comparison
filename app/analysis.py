@@ -109,29 +109,27 @@ def estimate(data, config):
     hei = None
     
     return {
-
         "segment": slc,
         "ate": ate,
         "drcdf": dr_cdf,
-        "hei" : hei
+        "hei" : hei,
+        "split_random_state": config.split_random_state
     }
 
 def create_response(result):
     return {
 
         "segment": {
-
             "cut1": result["segment"]["cut1"],
             "cut2": result["segment"]["cut2"]
-
         },
 
         "ate": result["ate"]["res"].to_dict(orient = "records"),
-
         "drcdf": result["drcdf"].to_dict(orient = "records"),
 
         # create_response()
-        "hei": None if result["hei"] is None else {"score": result["hei"]}
+        "hei": None if result["hei"] is None else {"score": result["hei"]},
+        "split_random_state": result["split_random_state"]
     }
     
 async def estimate_service(
