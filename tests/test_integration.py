@@ -33,16 +33,16 @@ def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels, seed_input
 
     outcome_labels = np.asarray(outcome_levels, dtype=object)
 
-    # data = pd.DataFrame({
-    #     "Q4_1": outcome_labels[within_segment % 5],
-    #     "Q7_4": np.repeat(
-    #         [1.0, 2.0, 3.0],
-    #         rows_per_segment,
-    #     ),
-    #     "Q2_9": within_segment.astype(float),
-    #     "x1": rng.normal(size=total_rows),
-    #     "x2": rng.normal(size=total_rows),
-    # })
+    data = pd.DataFrame({
+        "Q4_1": outcome_labels[within_segment % 5],
+        "Q7_4": np.repeat(
+            [1.0, 2.0, 3.0],
+            rows_per_segment,
+        ),
+        "Q2_9": within_segment.astype(float),
+        "x1": rng.normal(size=total_rows),
+        "x2": rng.normal(size=total_rows),
+    })
     
     request_config = copy.deepcopy(config)
 
@@ -55,7 +55,7 @@ def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels, seed_input
     request_config["outcome"]["scores"] = [1.0, 2.0, 3.0, 4.0, 5.0]
     request_config["covariates"]["columns"] = ["x1", "x2"]
     
-    data={"config": json.dumps(request_config)}
+    # data={"config": json.dumps(request_config)}
 
     csv = data.to_csv(
         index=False,
@@ -65,7 +65,7 @@ def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels, seed_input
         response = client.post(
             "/api/estimate",
             files={"file": ("valid.csv", csv, "text/csv")},
-                    data={"config": json.dumps(config)}
+                    data={"config": json.dumps(request_config)}
         )
 
     assert response.status_code == 200, response.text
