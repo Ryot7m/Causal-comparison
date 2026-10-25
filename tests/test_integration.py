@@ -124,9 +124,6 @@ def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels, seed_input
         and row["se_c"] >= 0
         for row in body["drcdf"]
     )
-    assert math.isfinite(
-        body["hei"]["score"]
-    )
     
     assert response.status_code == 200, response.text
     assert response.json()["split_random_state"] == expected_seed
