@@ -339,3 +339,10 @@ def test_analysis_request_rejects_extra_root_field(config):
         and error["loc"][-1] == "unexpected"
         for error in exc_info.value.errors()
     )
+
+def test_analysis_request_defaults_split_random_state_to_123(config):
+    config.pop("split_random_state", None)
+
+    request = AnalysisRequest.model_validate(config)
+
+    assert request.split_random_state == 123

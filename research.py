@@ -17,7 +17,7 @@ from workspace.hei import hei_result
 from workspace.preprocess import pre_analysis
 from typing import Literal
 
-data = pd.read_csv("sample.csv", encoding="shift-jis")
+data = pd.read_csv("7-4-18_data_app.csv", encoding="shift-jis")
 data = data.copy()
 data["Q4_1"] = (6 - pd.to_numeric(data["Q4_1"]))
 

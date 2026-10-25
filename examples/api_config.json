@@ -1,5 +1,6 @@
 {
   "schema_version": "1",
+  "split_random_state": 123,
   "treatment": {
     "mode": "quantile",
     "source_column": "exposure_score",

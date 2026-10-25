@@ -249,7 +249,7 @@ def segmentation_rtn(S, feature_names, A, X, config):
         ps_kwargs=ps_kwargs_design
     )
 
-    print(rank_design.head(10))
+    print(rank_design.head(5).to_string(index=False))
 
     if rank_design.empty:
             raise ValueError(
@@ -257,7 +257,7 @@ def segmentation_rtn(S, feature_names, A, X, config):
                 "サンプル数・各群の最小人数・セグメント変数を見直してください。")
         
     best = rank_design.iloc[0]
-
+    print(best)
     cut1, cut2 = best["cut1"], best["cut2"]
     seg_opt = make_seg_from_cuts(S, cut1, cut2)
     print("best cuts:", cut1, cut2)
@@ -326,7 +326,7 @@ def segmentation_rtn(S, feature_names, A, X, config):
         all_rows.append(tmp)
 
     per_seg_df = pd.DataFrame(per_seg_summary).sort_values("seg")
-    print(per_seg_df)
+    # print(per_seg_df)
 
     # all_smd = pd.concat(all_rows, ignore_index=True)
 
@@ -356,7 +356,7 @@ def select_segment_cuts(S, A, X, config):
         S=S,
         A=A,
         X=X,
-        min_total_per_seg=100,
+        min_total_per_seg=200,
         min_each_treat_per_seg=10,
         cap_weight=config.weight_cap,
         ps_kwargs={
@@ -364,6 +364,15 @@ def select_segment_cuts(S, A, X, config):
             "calibration": "isotonic",
         },
     )
+    
+    seg_manual = np.select(
+    [S <= 1, S <= 2],
+    [0, 1],
+    default=2,)
+
+    print("各セグメントの件数:", np.unique(seg_manual, return_counts=True))
+    print("セグメントごとの処置群・対照群:")
+    print(pd.crosstab(seg_manual, A))
 
     if rank_design.empty:
         raise ValueError("条件を満たす3セグメントを作れません。")
