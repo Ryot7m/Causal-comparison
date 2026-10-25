@@ -4,6 +4,8 @@ import numpy as np
 import pandas as pd
 import pytest
 import json
+import copy
+import pytest
 from fastapi.testclient import TestClient
 
 from app.main import app
@@ -11,36 +13,49 @@ from app.main import app
 
 @pytest.mark.slow
 @pytest.mark.parametrize(
-    "outcome_levels",
-    [[1, 2, 3, 4, 5],["very_low", "low", "middle", "high", "very_high"]]
+    ("seed_input", "expected_seed"),
+    [(None, 123), (42, 42)],
+    ids=["default-123", "explicit-42"],
 )
-
-def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels):
+@pytest.mark.parametrize(
+    "outcome_levels",
+    [
+        [1, 2, 3, 4, 5],
+        ["very_low", "low", "middle", "high", "very_high"],
+    ],
+)
+def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels, seed_input, expected_seed):
     rng = np.random.default_rng(42)
 
     rows_per_segment = 500
     total_rows = rows_per_segment * 3
-    within_segment = np.tile(
-        np.arange(rows_per_segment),
-        3
-    )
+    within_segment = np.tile(np.arange(rows_per_segment), 3)
 
     outcome_labels = np.asarray(outcome_levels, dtype=object)
 
-    data = pd.DataFrame({
-        "Q4_1": outcome_labels[within_segment % 5],
-        "Q7_4": np.repeat(
-            [1.0, 2.0, 3.0],
-            rows_per_segment,
-        ),
-        "Q2_9": within_segment.astype(float),
-        "x1": rng.normal(size=total_rows),
-        "x2": rng.normal(size=total_rows),
-    })
+    # data = pd.DataFrame({
+    #     "Q4_1": outcome_labels[within_segment % 5],
+    #     "Q7_4": np.repeat(
+    #         [1.0, 2.0, 3.0],
+    #         rows_per_segment,
+    #     ),
+    #     "Q2_9": within_segment.astype(float),
+    #     "x1": rng.normal(size=total_rows),
+    #     "x2": rng.normal(size=total_rows),
+    # })
     
-    config["outcome"]["levels"] = outcome_levels
-    config["outcome"]["scores"] = [1.0, 2.0, 3.0, 4.0, 5.0]
-    config["covariates"]["columns"] = ["x1", "x2"]
+    request_config = copy.deepcopy(config)
+
+    if seed_input is None:
+        request_config.pop("split_random_state", None)
+    else:
+        request_config["split_random_state"] = seed_input
+
+    request_config["outcome"]["levels"] = outcome_levels
+    request_config["outcome"]["scores"] = [1.0, 2.0, 3.0, 4.0, 5.0]
+    request_config["covariates"]["columns"] = ["x1", "x2"]
+    
+    data={"config": json.dumps(request_config)}
 
     csv = data.to_csv(
         index=False,
@@ -61,7 +76,8 @@ def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels):
         "segment",
         "ate",
         "drcdf",
-        "hei"
+        "hei",
+        "split_random_state"
     }
 
     assert body["segment"] == {
@@ -108,7 +124,12 @@ def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels):
         and row["se_c"] >= 0
         for row in body["drcdf"]
     )
-
+    assert math.isfinite(
+        body["hei"]["score"]
+    )
+    
+    assert response.status_code == 200, response.text
+    assert response.json()["split_random_state"] == expected_seed
     # assert math.isfinite(
     #     body["hei"]["score"]
     # )
