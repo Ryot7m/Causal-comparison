@@ -158,7 +158,7 @@ multipart/form-data
 | 列の役割 | outcome・segment・treatment・covariatesで重複不可 |
 | `missing.strategy` | `drop` / `zero` / `fill` |
 | `fill_values` | `strategy: "fill"`の場合のみ指定可。交絡変数のみ対象 |
-| `split_random_state` | 省略時は`123`。設計用・推定用データの分割に使う乱数シード |
+| `split_random_state` | 設計用・推定用データの分割に使う乱数シード：`123`|
 
 | strategy | 動作 |
 |---|---|
