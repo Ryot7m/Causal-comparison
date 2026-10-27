@@ -47,6 +47,7 @@ def test_estimate_accepts_valid_csv(monkeypatch, config):
                 },
             ]),
             "hei": 0.25,
+            "split_random_state" : config.split_random_state
         }
 
     monkeypatch.setattr(
