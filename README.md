@@ -7,9 +7,10 @@ CSVをアップロードすると
 - 解釈可能な因果セグメンテーション
 - AIPWによるセグメント別の平均処置効果推定
 - DR-CDFによるアウトカム分布への効果推定
-- HEIによるセグメント間の異質性評価
 
 これらの評価を確認できます。
+
+※現在のAPIは、セグメント別ATEとDR-CDFを返します。HEIは現行APIでは計算しておらず、レスポンスではnullを返します。
 
 Swagger UIからCSVファイルと分析設定JSONを指定して実行できます。
 
@@ -117,11 +118,12 @@ causal-comparison/
 ## API仕様
 
 本システムでは、REST APIを通じて因果推論分析を実行できます。
-CSVファイルをアップロードすると、セグメンテーション、AIPWによる平均処置効果推定、DR-CDFによる分布効果推定、HEIによる異質性評価を実施し、JSON形式で結果を返します。
+CSVファイルをアップロードすると、セグメンテーション、AIPWによる平均処置効果推定、DR-CDFによる分布効果推定
+JSON形式で結果を返します。
 
 ### 因果効果推定API
 
-CSVデータをアップロードし、セグメンテーション・AIPW・DR-CDF・HEIによる分析結果を取得します。
+CSVデータをアップロードし、セグメンテーション・AIPW・DR-CDFによる分析結果を取得します。
 
 ### エンドポイント
 
@@ -158,7 +160,7 @@ multipart/form-data
 | 列の役割 | outcome・segment・treatment・covariatesで重複不可 |
 | `missing.strategy` | `drop` / `zero` / `fill` |
 | `fill_values` | `strategy: "fill"`の場合のみ指定可。交絡変数のみ対象 |
-| `split_random_state` | 設計用・推定用データの分割に使う乱数シード：`123`|
+| `split_random_state` | 設計用・推定用データの分割に使う乱数シード：`123` 指定可能範囲は`0`〜`4294967295`|
 
 | strategy | 動作 |
 |---|---|
@@ -166,7 +168,7 @@ multipart/form-data
 | `zero` | 交絡変数だけを0で補完し、その他の必須列の欠損行は除外 |
 | `fill` | `fill_values`で指定した交絡変数だけを列別の値で補完 |
 
-### レスポンス
+### リクエスト例
 
 ```json
 {
@@ -174,7 +176,7 @@ multipart/form-data
   "treatment": {
     "mode": "quantile",
     "source_column": "exposure_score",
-    "quantile": 0.75,
+    "quantile": 0.5,
     "treated_when": "ge"
   },
   "outcome": {
@@ -184,18 +186,52 @@ multipart/form-data
   },
   "segment": {
     "column": "expectation",
-    "missing_values": ["未回答"]
+    "missing_values": []
   },
   "covariates": {
     "columns": ["age", "region"],
     "categorical_columns": ["region"]
   },
   "missing": {
-    "strategy": "fill",
-    "fill_values": {
-      "age": 0
+    "strategy": "drop"
+  },
+  "split_random_state": 123
+}
+```
+
+### レスポンス
+
+```json
+{
+  "segment": {
+    "cut1": 1.0,
+    "cut2": 2.0
+  },
+  "ate": [
+    {
+      "cls": 0,
+      "clsnum": 120,
+      "ate": 0.01,
+      "se": 0.05,
+      "ci_low": -0.088,
+      "ci_high": 0.108
     }
-  }
+  ],
+  "drcdf": [
+    {
+      "seg": 0,
+      "c": 0,
+      "threshold": "low",
+      "F1_dr": 0.4,
+      "F0_dr": 0.5,
+      "tau_c": -0.1,
+      "se_c": 0.05,
+      "ci_low": -0.198,
+      "ci_high": -0.002
+    }
+  ],
+  "hei": null,
+  "split_random_state": 123
 }
 ```
 
@@ -206,7 +242,8 @@ multipart/form-data
 | segment | 推定されたセグメント境界 |
 | ate | セグメントごとの平均処置効果（ATE） |
 | drcdf | DR-CDFによる処置効果分布 (threshold: 対応するoutcome levelの値。数値または文字列。) |
-| hei | 異質性評価指標（HEI） |
+| hei | 現行APIでは未計算のため`null` |
+| split_random_state | 設計用・推定用データの分割に実際に使った整数シード |
 
 ### エラーレスポンス
 
@@ -235,40 +272,17 @@ python -m pytest --cov=app --cov=workspace --cov-report=term-missing
 本システムでは、CSVデータを入力として受け取り、前処理から因果効果推定までを一連のパイプラインとして実行します。
 
 ```text
-CSVデータ
-    │
-    ▼
-データ読み込み・入力検証
-(load_csv / validate_data)
-    │
-    ▼
+CSV読み込み・入力検証
+    ↓
 前処理
-(pre_analysis)
-    │
-    ├── 説明変数の抽出
-    ├── One-Hot Encoding
-    ├── 処置変数(A)作成
-    └── アウトカム(Y)作成
-    │
-    ▼
-セグメンテーション
-(segmentation.py)
-    │
-    ▼
-AIPWによる平均処置効果(ATE)推定
-(aipw.py)
-    │
-    ▼
-DR-CDFによる分布効果推定
-(drcdf.py)
-    │
-    ▼
-HEIによる異質性評価
-(hei.py)
-    │
-    ▼
-JSONレスポンス生成
-(create_response)
+    ↓
+処置群・対照群の割合を保ってデータ分割
+    ├─ 設計用データ → セグメント境界を選択
+    └─ 推定用データ → 選択した境界を適用
+                         ↓
+                    AIPW・DR-CDF
+                         ↓
+              JSON（HEIはnull、シードを返す）
 ```
 
 ### 各処理の概要
@@ -281,7 +295,6 @@ JSONレスポンス生成
 | セグメンテーション | セグメント境界を推定する |
 | AIPW | 平均処置効果（ATE）を推定する |
 | DR-CDF | 処置効果の分布を推定する |
-| HEI | セグメント間の異質性を評価する |
 | レスポンス生成 | APIレスポンス(JSON)を生成する |
 
 ## 技術スタック
@@ -345,6 +358,7 @@ HEI
 4. **HEI（Heterogeneity Evaluation Index）**
    - セグメント間の異質性を定量評価
    - 提案手法と比較手法の性能比較に利用
+   - **研究用スクリプトの処理・実験結果であり、現行APIでは計算しない**
 
 5. **セグメント選択と効果推定のデータ分割**
    - 分析データは処置群・対照群の割合を保って2分割します。設計用データで、アウトカムを使わずにセグメント境界を選択
@@ -426,6 +440,5 @@ HEI
 - 対象間で処置の干渉がないこと
 - 傾向スコアモデルまたはアウトカムモデルが適切に指定されていること
 
-また、現在の実装では同一データをセグメント選択と効果推定に使用しています。報告される信頼区間は、セグメント選択による不確実性を完全には考慮していません。
 
-本プロジェクトは研究・検証用の実装であり、推定結果だけを根拠として重要な意思決定を行うことは想定していません。
+分析データを処置群・対照群の割合を保って設計用データと推定用データに分割します。設計用データでセグメント境界を選び、その境界を推定用データに適用してATEとDR-CDFを推定します。信頼区間は選択された境界と分割を条件とした推定用データの不確実性を示し、分割や境界選択をやり直したときの変動までは含みません。
