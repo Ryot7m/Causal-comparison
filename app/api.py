@@ -32,8 +32,7 @@ async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str
     job = create_analysis_job(
     db=db,
     config=request_config.model_dump(mode="json"),
-    filename=file.filename,
-    status="running",
+    filename=file.filename or "uploaded.csv"
     )
     
     
@@ -41,13 +40,18 @@ async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str
         response = await estimate_service(file, request_config)
         mark_analysis_succeeded(db, job.id, response)
         return response
-    except Exception as exc:
+    
+    except ValueError as exc:
         mark_analysis_failed(db, job.id, str(exc))
-        raise
-        
-    except Exception:
+        raise HTTPException(
+            status_code=400,
+            detail=str(exc)
+        ) from exc
+    
+    except Exception as exc:
         logger.exception("estimate endpoint failed")
+        mark_analysis_failed(db, job.id, "Internal Server Error")
         raise HTTPException(
             status_code=500,
             detail="Internal Server Error"
-        )
+        ) from exc

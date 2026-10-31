@@ -12,6 +12,7 @@ from app.database import Base
 
 class AnalysisJob(Base):
     __tablename__ = "analysis_jobs"
+    default = "running"
 
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
