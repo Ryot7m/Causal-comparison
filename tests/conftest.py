@@ -3,6 +3,8 @@ import pytest
 
 from app.analysis import AnalysisConfig
 from app.dantic import QuantileTreatment
+from app.database import Base, engine
+from app.models import AnalysisJob
 
 @pytest.fixture
 def config():
@@ -61,3 +63,8 @@ def analysis_data():
         "state": [1.0, 2.0, 3.0, 4.0],
         "x1": [10.0, 20.0, 30.0, 40.0],
     })
+    
+@pytest.fixture(scope="session", autouse=True)
+def create_test_tables():
+    Base.metadata.create_all(bind=engine)
+    yield
