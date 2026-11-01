@@ -24,8 +24,12 @@ def create_analysis_job(db: Session, config: dict, filename: str) -> AnalysisJob
     )
     
     db.add(job)
-    db.commit()
-    db.refresh(job)
+    try:
+        db.commit()
+        db.refresh(job)
+    except Exception:
+        db.rollback()
+        raise
     return job
 
 
