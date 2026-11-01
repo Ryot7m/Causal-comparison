@@ -68,9 +68,18 @@ def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels, seed_input
                     data={"config": json.dumps(request_config)}
         )
 
-    assert response.status_code == 200, response.text
+        assert response.status_code == 200, response.text
+        body = response.json()
+        
+        job_response = client.get(f"/api/jobs/{body['job_id']}")
 
-    body = response.json()
+    assert job_response.status_code == 200
+    job_body = job_response.json()
+
+    assert job_body["job_id"] == body["job_id"]
+    assert job_body["status"] == "succeeded"
+    assert job_body["result"] is not None
+    assert job_body["input_filename"] == "valid.csv"
 
     assert set(body) == {
         "segment",

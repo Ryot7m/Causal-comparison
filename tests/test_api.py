@@ -3,8 +3,8 @@ import json
 from app import analysis
 
 from fastapi.testclient import TestClient
-
 from app.main import app
+from uuid import uuid4
 
 
 client = TestClient(app)
@@ -219,3 +219,9 @@ def test_estimate_rejects_invalid_missing_config(
         "fill_valuesを指定" in error["msg"]
         for error in errors
     )
+    
+def test_get_analysis_job_returns_404():
+    response = client.get(f"/api/jobs/{uuid4()}")
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == "分析ジョブが見つかりません。"
