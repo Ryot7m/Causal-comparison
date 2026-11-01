@@ -1,6 +1,11 @@
 from math import isfinite
 from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from datetime import datetime
+from typing import Literal
+from uuid import UUID
+
+from pydantic import BaseModel
 
 class SegmentResult(BaseModel):
     cut1: float
@@ -38,6 +43,8 @@ class EstimateResponse(BaseModel):
     # EstimateResponse
     hei: HeiResult | None = None
     split_random_state: int
+    job_id: UUID
+    
 class BinaryColumnTreatment(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -206,6 +213,13 @@ class AnalysisRequest(BaseModel):
     covariates: CovariateSpec
     missing: MissingSpec = Field(default_factory=MissingSpec)
     split_random_state: int = Field(default=123, ge=0, le=2**32 - 1)
+    job_id: UUID
+    status: Literal["queued", "running", "succeeded", "failed"]
+    input_filename: str | None
+    result: dict | None
+    error_message: str | None
+    created_at: datetime
+    finished_at: datetime | None
 
     @model_validator(mode="after")
     def validate_column_roles(self):
