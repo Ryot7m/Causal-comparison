@@ -62,3 +62,6 @@ def mark_analysis_failed(db: Session, job_id: UUID, error_message: str) -> None:
     except Exception:
         db.rollback()
         raise
+    
+def get_analysis_job(db: Session, job_id: UUID) -> AnalysisJob | None:
+    return db.get(AnalysisJob, job_id)

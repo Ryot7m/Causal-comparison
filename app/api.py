@@ -7,6 +7,9 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 from app.renew import create_analysis_job,mark_analysis_succeeded,mark_analysis_failed
 from app.database import get_db
+from uuid import UUID
+from app.dantic import AnalysisJobResponse
+from app.renew import get_analysis_job
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +42,7 @@ async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str
     try:
         response = await estimate_service(file, request_config)
         mark_analysis_succeeded(db, job_id, response)
+        response["job_id"] = str(job_id)
         return response
     
     except ValueError as exc:
@@ -55,3 +59,27 @@ async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str
             status_code=500,
             detail="Internal Server Error"
         ) from exc
+        
+@router.get("/jobs/{job_id}", response_model=AnalysisJobResponse)
+
+def read_analysis_job(
+    job_id: UUID,
+    db: Annotated[Session, Depends(get_db)],
+):
+    job = get_analysis_job(db, job_id)
+
+    if job is None:
+        raise HTTPException(
+            status_code=404,
+            detail="分析ジョブが見つかりません。",
+        )
+
+    return {
+        "job_id": job.id,
+        "status": job.status,
+        "input_filename": job.input_filename,
+        "result": job.result,
+        "error_message": job.error_message,
+        "created_at": job.created_at,
+        "finished_at": job.finished_at,
+    }
