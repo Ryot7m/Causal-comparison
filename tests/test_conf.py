@@ -1,7 +1,7 @@
 import pytest
 
 from app.database import Base, engine
-import app.models  # モデルをBaseに登録する
+from app.models import AnalysisJob  # モデルをBaseに登録する
 
 
 @pytest.fixture(scope="session", autouse=True)
