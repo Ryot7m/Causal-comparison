@@ -77,7 +77,8 @@ def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels, seed_input
         "ate",
         "drcdf",
         "hei",
-        "split_random_state"
+        "split_random_state",
+        "job_id"
     }
 
     assert body["segment"] == {
