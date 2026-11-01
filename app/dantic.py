@@ -213,13 +213,6 @@ class AnalysisRequest(BaseModel):
     covariates: CovariateSpec
     missing: MissingSpec = Field(default_factory=MissingSpec)
     split_random_state: int = Field(default=123, ge=0, le=2**32 - 1)
-    job_id: UUID
-    status: Literal["queued", "running", "succeeded", "failed"]
-    input_filename: str | None
-    result: dict | None
-    error_message: str | None
-    created_at: datetime
-    finished_at: datetime | None
 
     @model_validator(mode="after")
     def validate_column_roles(self):
@@ -268,3 +261,12 @@ class AnalysisRequest(BaseModel):
             )
 
         return self
+    
+class AnalysisJobResponse(BaseModel):
+    job_id: UUID
+    status: Literal["queued", "running", "succeeded", "failed"]
+    input_filename: str | None = None
+    result: dict | None = None
+    error_message: str | None = None
+    created_at: datetime
+    finished_at: datetime | None = None
