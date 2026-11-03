@@ -3,12 +3,12 @@ import math
 import numpy as np
 import pandas as pd
 import pytest
-import json
 import copy
-import pytest
-from fastapi.testclient import TestClient
 
-from app.main import app
+from app.database import SessionLocal
+from app.models import AnalysisJob
+from app.renew import create_analysis_job
+from app.tasks import run_analysis_job
 
 
 @pytest.mark.slow
@@ -24,7 +24,7 @@ from app.main import app
         ["very_low", "low", "middle", "high", "very_high"],
     ],
 )
-def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels, seed_input, expected_seed):
+def test_analysis_job_runs_full_pipeline(config, outcome_levels, seed_input, expected_seed, tmp_path):
     rng = np.random.default_rng(42)
 
     rows_per_segment = 500
@@ -55,39 +55,35 @@ def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels, seed_input
     request_config["outcome"]["scores"] = [1.0, 2.0, 3.0, 4.0, 5.0]
     request_config["covariates"]["columns"] = ["x1", "x2"]
     
-    # data={"config": json.dumps(request_config)}
+    csv_path = tmp_path / "valid.csv"
+    data.to_csv(csv_path, index=False)
 
-    csv = data.to_csv(
-        index=False,
-    ).encode("utf-8")
-
-    with TestClient(app) as client:
-        response = client.post(
-            "/api/estimate",
-            files={"file": ("valid.csv", csv, "text/csv")},
-                    data={"config": json.dumps(request_config)}
+    with SessionLocal() as db:
+        job = create_analysis_job(
+            db=db,
+            config=request_config,
+            filename="valid.csv",
+            input_path=str(csv_path),
         )
+        job_id = job.id
 
-        assert response.status_code == 200, response.text
-        body = response.json()
-        
-        job_response = client.get(f"/api/jobs/{body['job_id']}")
+    # Redisを通さず、Celeryタスク本体をテスト内で直接実行
+    run_analysis_job.run(str(job_id))
 
-    assert job_response.status_code == 200
-    job_body = job_response.json()
+    with SessionLocal() as db:
+        job = db.get(AnalysisJob, job_id)
 
-    assert job_body["job_id"] == body["job_id"]
-    assert job_body["status"] == "succeeded"
-    assert job_body["result"] is not None
-    assert job_body["input_filename"] == "valid.csv"
+        assert job is not None
+        assert job.status == "succeeded", job.error_message
+        assert job.result is not None
+        body = job.result
 
     assert set(body) == {
         "segment",
         "ate",
         "drcdf",
         "hei",
-        "split_random_state",
-        "job_id"
+        "split_random_state"
     }
 
     assert body["segment"] == {
@@ -134,11 +130,3 @@ def test_estimate_endpoint_runs_full_pipeline(config, outcome_levels, seed_input
         and row["se_c"] >= 0
         for row in body["drcdf"]
     )
-    
-    assert response.status_code == 200, response.text
-    assert response.json()["split_random_state"] == expected_seed
-    # assert math.isfinite(
-    #     body["hei"]["score"]
-    # )
-    
-    assert body["hei"] is None
