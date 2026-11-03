@@ -17,36 +17,41 @@ class AnalysisJob(Base):
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
         primary_key=True,
-        default=uuid4,
+        default=uuid4
     )
     status: Mapped[str] = mapped_column(
         String(16),
         nullable=False,
         default="queued",
-        index=True,
+        index=True
     )
     config: Mapped[dict] = mapped_column(
         JSONB,
-        nullable=False,
+        nullable=False
     )
     input_filename: Mapped[str | None] = mapped_column(
         String(255),
-        nullable=True,
+        nullable=True
     )
     result: Mapped[dict | None] = mapped_column(
         JSONB,
-        nullable=True,
+        nullable=True
     )
     error_message: Mapped[str | None] = mapped_column(
         Text,
-        nullable=True,
+        nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,
-        server_default=func.now(),
+        server_default=func.now()
     )
     finished_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True),
-        nullable=True,
+        nullable=True
+    )
+    
+    input_path: Mapped[str | None] = mapped_column(
+    Text,
+    nullable=True
     )

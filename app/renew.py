@@ -16,11 +16,12 @@ def to_json_compatible(value):
         return [to_json_compatible(item) for item in value]
     return value
 
-def create_analysis_job(db: Session, config: dict, filename: str) -> AnalysisJob:
+def create_analysis_job(db: Session, config: dict, filename: str,  input_path: str | None = None) -> AnalysisJob:
     job = AnalysisJob(
         status="running",
         config=config,
         input_filename=filename,
+        input_path=input_path
     )
     
     db.add(job)
