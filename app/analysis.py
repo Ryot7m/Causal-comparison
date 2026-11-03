@@ -135,24 +135,15 @@ def create_response(result):
         "split_random_state": result["split_random_state"]
     }
     
-async def estimate_service(
-    file: UploadFile,
-    request_config: AnalysisRequest,
-):
-    data = await load_csv(file)
-
-    analysis_config = to_analysis_config(
-        request_config
-    )
-
-    validate_data(
-        data,
-        analysis_config,
-    )
-
-    result = estimate(
-        data,
-        analysis_config,
-    )
+def run_analysis(data: pd.DataFrame, request_config: AnalysisRequest):
+    
+    analysis_config = to_analysis_config(request_config)
+    validate_data(data, analysis_config)
+    result = estimate(data, analysis_config)
 
     return create_response(result)
+    
+async def estimate_service(file: UploadFile, request_config: AnalysisRequest):
+    data = await load_csv(file)
+
+    return run_analysis(data, request_config)
