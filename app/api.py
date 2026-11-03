@@ -10,6 +10,7 @@ from app.database import get_db
 from uuid import UUID
 from app.dantic import AnalysisJobResponse
 from app.renew import get_analysis_job
+from app.storage import csv_save
 
 logger = logging.getLogger(__name__)
 
@@ -31,11 +32,16 @@ async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str
             status_code=422,
             detail=e.errors(include_context=False)
         )
-        
+    
+    contents = await file.read()
+    input_path = csv_save(contents)
+    await file.seek(0)
+     
     job = create_analysis_job(
     db=db,
     config=request_config.model_dump(mode="json"),
-    filename=file.filename or "uploaded.csv"
+    filename=file.filename or "uploaded.csv",
+    input_path=input_path
     )
     job_id = job.id
     
