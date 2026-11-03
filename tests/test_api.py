@@ -1,96 +1,61 @@
-import pandas as pd
 import json
-from app import analysis
 
 from fastapi.testclient import TestClient
 from app.main import app
-from uuid import uuid4
+from uuid import uuid4, UUID
+from pathlib import Path
+from types import SimpleNamespace
+import app.api as api
 
 
 client = TestClient(app)
 
-def test_estimate_accepts_valid_csv(monkeypatch, config):
+def test_estimate_accepts_valid_csv(monkeypatch, config, tmp_path):
     captured = {}
+    expected_job_id = UUID("11111111-1111-4111-8111-111111111111")
 
-    def fake_estimate(data, config):
-        captured["columns"] = list(data.columns)
-        captured["row_count"] = len(data)
+    def fake_csv_save(contents):
+        path = tmp_path / "uploaded.csv"
+        path.write_bytes(contents)
+        captured["saved_path"] = path
+        return str(path)
 
-        return {
-            "segment": {
-                "cut1": 1.0,
-                "cut2": 2.0,
-            },
-            "ate": {
-                "res": pd.DataFrame([
-                    {
-                        "cls": 0,
-                        "clsnum": 3,
-                        "ate": 0.2,
-                        "se": 0.05,
-                        "ci_low": 0.1,
-                        "ci_high": 0.3,
-                    },
-                ]),
-            },
-            "drcdf": pd.DataFrame([
-                {
-                    "seg": 0,
-                    "c": 0,
-                    "threshold": 1.0,
-                    "F1_dr": 0.4,
-                    "F0_dr": 0.5,
-                    "tau_c": -0.1,
-                    "se_c": 0.05,
-                    "ci_low": -0.2,
-                    "ci_high": 0.0,
-                },
-            ]),
-            "hei": 0.25,
-            "split_random_state" : config.split_random_state
-        }
+    def fake_create_analysis_job(db, config, filename, input_path):
+        captured["filename"] = filename
+        captured["input_path"] = input_path
+        return SimpleNamespace(id=expected_job_id)
 
-    monkeypatch.setattr(
-        analysis,
-        "estimate",
-        fake_estimate,
+    class FakeTask:
+        def delay(self, job_id):
+            captured["queued_job_id"] = job_id
+
+    monkeypatch.setattr(api, "csv_save", fake_csv_save)
+    monkeypatch.setattr(api, "create_analysis_job", fake_create_analysis_job)
+    monkeypatch.setattr(api, "run_analysis_job", FakeTask())
+
+    csv_bytes = (
+        b"Q4_1,Q7_4,Q2_9,x1\n"
+        b"1,1,10,0.1\n"
+        b"2,2,20,0.2\n"
+        b"3,3,30,0.3\n"
     )
-
-    csv = (
-        "Q4_1,Q7_4,Q2_9,x1\n"
-        "1,1,10,0.1\n"
-        "2,2,20,0.2\n"
-        "3,3,30,0.3\n"
-    ).encode("utf-8")
 
     response = client.post(
         "/api/estimate",
-        files={"file": ("valid.csv", csv, "text/csv")},
-        data={"config": json.dumps(config)}
+        files={"file": ("valid.csv", csv_bytes, "text/csv")},
+        data={"config": json.dumps(config)},
     )
 
-    assert response.status_code == 200
-
-    body = response.json()
-
-    assert captured["row_count"] == 3
-    assert captured["columns"] == [
-        "Q4_1",
-        "Q7_4",
-        "Q2_9",
-        "x1"
-    ]
-
-    assert body["segment"] == {
-        "cut1": 1.0,
-        "cut2": 2.0
+    assert response.status_code == 202
+    assert response.json() == {
+        "job_id": str(expected_job_id),
+        "status": "queued",
     }
 
-    assert len(body["ate"]) == 1
-    assert len(body["drcdf"]) == 1
-    assert body["hei"] == {
-        "score": 0.25
-    }
+    assert captured["filename"] == "valid.csv"
+    assert captured["queued_job_id"] == str(expected_job_id)
+    assert captured["input_path"] == str(captured["saved_path"])
+    assert Path(captured["saved_path"]).read_bytes() == csv_bytes
 
 def test_health():
     response = client.get("/health")
@@ -99,19 +64,6 @@ def test_health():
     assert response.json() == {
         "status": "ok"
     }
-
-
-def test_estimate_rejects_missing_columns(config):
-    csv = b"a,b\n1,2\n"
-
-    response = client.post(
-        "/api/estimate",
-        files={"file": ("valid.csv", csv, "text/csv")},
-        data={"config": json.dumps(config)}
-    )
-
-    assert response.status_code == 400
-    assert "必要な列" in response.json()["detail"]
     
 def test_estimate_rejects_overlapping_column_roles(
     config
