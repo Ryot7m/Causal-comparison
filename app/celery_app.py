@@ -1,6 +1,6 @@
 import os
 
-from app.cerely_app import Celery
+from app.celery_app import Celery
 
 celery_app = Celery(
     "causal_comparison",
