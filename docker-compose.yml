@@ -10,6 +10,10 @@ services:
       - "8080:8000"
     environment:
       DATABASE_URL: postgresql+psycopg://causal_user:local_dev_password@db:5432/causal_comparison
+      UPLOAD_DIR: /data/uploads
+    volumes:
+      - analysis_uploads:/data/uploads
+
   db:
     image: postgres:16
     environment:
@@ -28,3 +32,4 @@ services:
 
 volumes:
   postgres_data:
+  analysis_uploads:
