@@ -10,6 +10,7 @@ from app.database import SessionLocal
 from app.dantic import AnalysisRequest
 from app.models import AnalysisJob
 from app.renew import mark_analysis_failed, mark_analysis_succeeded
+from app.storage import csv_delete
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +22,19 @@ logger = logging.getLogger(__name__)
 def run_analysis_job(job_id: str) -> None:
     job_uuid = UUID(job_id)
     db = SessionLocal()
+    input_path = None
 
     try:
         job = db.get(AnalysisJob, job_uuid)
         if job is None:
             raise ValueError(f"分析ジョブが見つかりません: {job_id}")
 
-        if not job.input_path:
+        input_path = job.input_path  # ここで控える
+
+        if not input_path:
             raise ValueError("ジョブにCSVの保存先がありません。")
 
-        csv_path = Path(job.input_path)
+        csv_path = Path(input_path)
         if not csv_path.is_file():
             raise FileNotFoundError(f"CSVファイルが見つかりません: {csv_path}")
 
@@ -47,7 +51,6 @@ def run_analysis_job(job_id: str) -> None:
     except Exception as exc:
         db.rollback()
 
-        # ジョブが存在する場合は、失敗状態をDBに保存する
         if db.get(AnalysisJob, job_uuid) is not None:
             mark_analysis_failed(db, job_uuid, str(exc))
 
@@ -55,4 +58,20 @@ def run_analysis_job(job_id: str) -> None:
         raise
 
     finally:
+        if input_path:
+            try:
+                csv_delete(input_path)
+
+                saved_job = db.get(AnalysisJob, job_uuid)
+                if saved_job is not None:
+                    saved_job.input_path = None
+                    db.commit()
+
+            except Exception:
+                db.rollback()
+                logger.exception(
+                    "アップロードCSVの削除に失敗しました。job_id=%s",
+                    job_id,
+                )
+
         db.close()
