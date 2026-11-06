@@ -51,31 +51,28 @@ docker compose up --build
 
 ```text
 Client
-  │
-  │ CSV Upload + config(JSON)
+  │ POST /api/estimate（CSV + config）
   ▼
-app/main.py
-FastAPI Application
-  │
+FastAPI（app/api.py）
+  ├─ configを検証
+  ├─ CSVを共有ストレージに保存
+  ├─ ジョブをDBに登録（queued）
+  └─ Redisにタスクを登録
+       │
+       ├── 202 Accepted + job_id をClientへ返す
+       ▼
+     Redis
+       ▼
+Celery worker（app/tasks.py）
+  ├─ ジョブを running に更新
+  ├─ 共有ストレージからCSVを読み込む
+  ├─ 分析を実行（app/analysis.py、workspace/）
+  └─ DBに succeeded と結果、または failed とエラーを保存
+
+Client
+  │ GET /api/jobs/{job_id}
   ▼
-app/api.py
-API Endpoint
-  │
-  ▼
-app/analysis.py
-Analysis Pipeline
-  │
-  ├── workspace/preprocess.py
-  ├── workspace/segmentation.py
-  ├── workspace/aipw.py
-  ├── workspace/drcdf.py
-  └── workspace/hei.py
-  │
-  ▼
-Pydantic Response
-  │
-  ▼
-JSON
+FastAPI ── DBからジョブ状態・結果を取得して返す
 ```
 
 ## ディレクトリ構成
@@ -84,11 +81,16 @@ causal-comparison/
 │
 ├── app/
 │   ├── main.py          # FastAPIアプリケーション
-│   ├── api.py           # APIエンドポイント
+│   ├── api.py           # 分析受付・ジョブ状態取得API
 │   ├── analysis.py      # 分析パイプライン
-│   ├── dantic.py       # Pydanticモデル
-│   ├── config.py        # 各種設定
-│   └── database.py      # DB接続（拡張用）
+│   ├── celery_app.py    # Celeryアプリケーション設定
+│   ├── tasks.py         # workerが実行する分析タスク
+│   ├── database.py      # PostgreSQL接続・セッション管理
+│   ├── models.py        # SQLAlchemyのDBモデル
+│   ├── renew.py         # 分析ジョブの登録・状態更新・取得
+│   ├── storage.py       # アップロードCSVの保存
+│   ├── dantic.py        # リクエスト・レスポンスのPydanticモデル
+│   └── config.py        # アプリケーション設定
 │
 ├── workspace/
 │   ├── preprocess.py
@@ -100,8 +102,13 @@ causal-comparison/
 │   ├── ateplot.py       # 可視化
 │   └── drcdfplot.py
 │
-├── tests/               # テストコード
-│
+├── tests/
+│   ├── conftest.py
+│   ├── test_api.py
+│   ├── test_integration.py
+│   └── test_tasks.py
+├── examples/
+│   └── api_sample.csv
 ├── .github/
 │   └── workflows/
 │       └── pytests.yml
@@ -118,8 +125,7 @@ causal-comparison/
 ## API仕様
 
 本システムでは、REST APIを通じて因果推論分析を実行できます。
-CSVファイルをアップロードすると、セグメンテーション、AIPWによる平均処置効果推定、DR-CDFによる分布効果推定
-JSON形式で結果を返します。
+POSTで受付結果を返し、GETで状態と分析結果を取得する
 
 ### 因果効果推定API
 
@@ -127,10 +133,9 @@ CSVデータをアップロードし、セグメンテーション・AIPW・DR-C
 
 ### エンドポイント
 
-**POST**
-
 ```
-/api/estimate
+POST /api/estimate
+GET  /api/jobs/{job_id}
 ```
 
 ### リクエスト
@@ -139,6 +144,23 @@ CSVデータをアップロードし、セグメンテーション・AIPW・DR-C
 
 ```
 multipart/form-data
+```
+
+## 非同期分析APIの使い方
+
+分析にはCSVファイルと分析設定JSONを使用します。分析処理はバックグラウンドで実行されます。
+
+1. `POST /api/estimate` にCSVファイルと設定JSONを送信します。
+2. 受付レスポンスの `job_id` を控えます。
+3. `GET /api/jobs/{job_id}` を呼び出して状態と結果を確認します。
+
+受付時は `202 Accepted` と、次の形式のJSONが返ります。
+
+```json
+{
+  "job_id": "返されたジョブID",
+  "status": "queued"
+}
 ```
 
 **パラメータ**
@@ -160,7 +182,7 @@ multipart/form-data
 | 列の役割 | outcome・segment・treatment・covariatesで重複不可 |
 | `missing.strategy` | `drop` / `zero` / `fill` |
 | `fill_values` | `strategy: "fill"`の場合のみ指定可。交絡変数のみ対象 |
-| `split_random_state` | 設計用・推定用データの分割に使う乱数シード：`123` 指定可能範囲は`0`〜`4294967295`|
+| `split_random_state` | 設計用・推定用データの分割に使う乱数シード：`123` 。指定可能範囲は`0`〜`4294967295`|
 
 | strategy | 動作 |
 |---|---|
@@ -201,8 +223,14 @@ multipart/form-data
 
 ### レスポンス
 
+分析完了後のGETレスポンス例
+
 ```json
 {
+  "job_id": "返されたジョブID",
+  "status": "succeeded",
+  "input_filename": "sample.csv",
+  "result": {
   "segment": {
     "cut1": 1.0,
     "cut2": 2.0
@@ -232,6 +260,10 @@ multipart/form-data
   ],
   "hei": null,
   "split_random_state": 123
+  },
+  "error_message": null,
+  "created_at": "日時",
+  "finished_at": "日時"
 }
 ```
 
@@ -249,9 +281,10 @@ multipart/form-data
 
 | ステータス | 内容 |
 |---|---|
-| 400 | configは正しいが、CSVの必要列不足・未定義outcome・処置群または対照群の不足など、データ内容に問題がある |
-| 422 | `config`の欠落、JSON不正、schema不正、列の役割重複など、リクエスト設定が不正 |
+| 404 | `GET /api/jobs/{job_id}` で指定したジョブが見つからない |
+| 422 | `config`の欠落、JSON不正、schema不正、列の役割重複など |
 | 500 | 想定外のサーバ内部エラー |
+| 503 | Redisなどに接続できず、分析ジョブをCeleryのキューに登録できない |
 
 ## テスト
 
