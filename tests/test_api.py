@@ -6,6 +6,8 @@ from uuid import uuid4, UUID
 from pathlib import Path
 from types import SimpleNamespace
 import app.api as api
+from app.database import SessionLocal
+from app.renew import create_analysis_job, mark_analysis_succeeded
 
 
 client = TestClient(app)
@@ -177,3 +179,31 @@ def test_get_analysis_job_returns_404():
 
     assert response.status_code == 404
     assert response.json()["detail"] == "分析ジョブが見つかりません。"
+    
+def test_get_analysis_job_returns_saved_result():
+    expected_result = {
+        "segment": {"cut1": 1.0, "cut2": 2.0},
+        "ate": [],
+        "drcdf": [],
+        "hei": None,
+        "split_random_state": 123,
+    }
+
+    with SessionLocal() as db:
+        job = create_analysis_job(
+            db=db,
+            config={},
+            filename="sample.csv",
+        )
+        job_id = job.id
+        mark_analysis_succeeded(db, job_id, expected_result)
+
+    response = client.get(f"/api/jobs/{job_id}")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["job_id"] == str(job_id)
+    assert body["status"] == "succeeded"
+    assert body["input_filename"] == "sample.csv"
+    assert body["result"] == expected_result
+    assert body["error_message"] is None
