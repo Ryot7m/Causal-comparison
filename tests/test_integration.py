@@ -9,6 +9,7 @@ from app.database import SessionLocal
 from app.models import AnalysisJob
 from app.renew import create_analysis_job
 from app.tasks import run_analysis_job
+import app.storage as astg
 
 
 @pytest.mark.slow
@@ -24,7 +25,7 @@ from app.tasks import run_analysis_job
         ["very_low", "low", "middle", "high", "very_high"],
     ],
 )
-def test_analysis_job_runs_full_pipeline(config, outcome_levels, seed_input, expected_seed, tmp_path):
+def test_analysis_job_runs_full_pipeline(config, outcome_levels, seed_input, expected_seed, tmp_path, monkeypatch):
     rng = np.random.default_rng(42)
 
     rows_per_segment = 500
@@ -55,7 +56,11 @@ def test_analysis_job_runs_full_pipeline(config, outcome_levels, seed_input, exp
     request_config["outcome"]["scores"] = [1.0, 2.0, 3.0, 4.0, 5.0]
     request_config["covariates"]["columns"] = ["x1", "x2"]
     
-    csv_path = tmp_path / "valid.csv"
+    upload_dir = tmp_path / "uploads"
+    upload_dir.mkdir()
+    monkeypatch.setattr(astg, "UPLOAD_DIR", upload_dir)
+    csv_path = upload_dir / "valid.csv"
+    
     data.to_csv(csv_path, index=False)
 
     with SessionLocal() as db:
@@ -77,6 +82,7 @@ def test_analysis_job_runs_full_pipeline(config, outcome_levels, seed_input, exp
         assert job.status == "succeeded", job.error_message
         assert job.result is not None
         body = job.result
+        assert body["split_random_state"] == expected_seed
 
     assert set(body) == {
         "segment",
@@ -130,3 +136,10 @@ def test_analysis_job_runs_full_pipeline(config, outcome_levels, seed_input, exp
         and row["se_c"] >= 0
         for row in body["drcdf"]
     )
+    
+    assert not csv_path.exists()
+
+    with SessionLocal() as db:
+        job = db.get(AnalysisJob, job_id)
+        assert job is not None
+        assert job.input_path is None
