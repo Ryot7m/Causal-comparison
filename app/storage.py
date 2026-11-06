@@ -11,7 +11,7 @@ def csv_save(contents: bytes) -> str:
 
     path = UPLOAD_DIR / f"{uuid4().hex}.csv"
     path.write_bytes(contents)
-
+    return str(path)
     return str(path)
 
 def csv_delete(path: str | None) -> None:
