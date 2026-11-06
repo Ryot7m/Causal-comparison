@@ -1,14 +1,17 @@
 import logging
 from pathlib import Path
 from uuid import UUID
-
 import pandas as pd
+import pytest
 
 from app.analysis import run_analysis
 from app.celery_app import celery_app
 from app.database import SessionLocal
 from app.dantic import AnalysisRequest
 from app.models import AnalysisJob
+
+from app.renew import mark_analysis_failed, mark_analysis_succeeded, create_analysis_job
+import app.storage as astg
 from app.renew import mark_analysis_failed, mark_analysis_succeeded
 from app.storage import csv_delete
 
@@ -58,6 +61,41 @@ def run_analysis_job(job_id: str) -> None:
         raise
 
     finally:
+        db.close()
+        
+def test_job_fails_when_required_columns_are_missing(
+    config,
+    tmp_path,
+    monkeypatch,
+):
+    upload_dir = tmp_path / "uploads"
+    upload_dir.mkdir()
+    monkeypatch.setattr(astg, "UPLOAD_DIR", upload_dir)
+
+    csv_path = upload_dir / "missing_columns.csv"
+    csv_path.write_text("a,b\n1,2\n", encoding="utf-8")
+
+    with SessionLocal() as db:
+        job = create_analysis_job(
+            db=db,
+            config=config,
+            filename="missing_columns.csv",
+            input_path=str(csv_path),
+        )
+        job_id = job.id
+
+    with pytest.raises(ValueError, match="必要な列"):
+        run_analysis_job.run(str(job_id))
+
+    assert not csv_path.exists()
+
+    with SessionLocal() as db:
+        job = db.get(AnalysisJob, job_id)
+        assert job is not None
+        assert job.status == "failed"
+        assert "必要な列" in job.error_message
+        assert job.finished_at is not None
+        assert job.input_path is None
         if input_path:
             try:
                 csv_delete(input_path)
