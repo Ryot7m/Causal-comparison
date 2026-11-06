@@ -270,3 +270,7 @@ class AnalysisJobResponse(BaseModel):
     error_message: str | None = None
     created_at: datetime
     finished_at: datetime | None = None
+    
+class AnalysisJobAcceptedResponse(BaseModel):
+    job_id: UUID
+    status: Literal["queued"]

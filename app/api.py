@@ -1,15 +1,16 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException, Form
 from typing import Annotated
-from app.dantic import AnalysisRequest,EstimateResponse
-from app.analysis import estimate_service
+from app.dantic import AnalysisRequest, AnalysisJobAcceptedResponse
 import logging
 from fastapi import Depends
 from sqlalchemy.orm import Session
-from app.renew import create_analysis_job,mark_analysis_succeeded,mark_analysis_failed
+from app.renew import create_analysis_job, mark_analysis_failed
 from app.database import get_db
 from uuid import UUID
 from app.dantic import AnalysisJobResponse
 from app.renew import get_analysis_job
+from app.storage import csv_save
+from app.tasks import run_analysis_job
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +19,7 @@ router = APIRouter(
     tags=["Estimate"]
 )
 
-@router.post("/estimate", response_model=EstimateResponse)
+@router.post("/estimate",  response_model=AnalysisJobAcceptedResponse, status_code=202)
 
 async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str, Form(...)], db: Annotated[Session, Depends(get_db)]):  
     try:
@@ -30,35 +31,36 @@ async def estimate(file: Annotated[UploadFile, File(...)], config: Annotated[str
         raise HTTPException(
             status_code=422,
             detail=e.errors(include_context=False)
-        )
-        
+        ) from e
+    
+    contents = await file.read()
+    input_path = csv_save(contents)
+     
     job = create_analysis_job(
     db=db,
     config=request_config.model_dump(mode="json"),
-    filename=file.filename or "uploaded.csv"
+    filename=file.filename or "uploaded.csv",
+    input_path=input_path
     )
-    job_id = job.id
     
     try:
-        response = await estimate_service(file, request_config)
-        mark_analysis_succeeded(db, job_id, response)
-        response["job_id"] = str(job_id)
-        return response
-    
-    except ValueError as exc:
-        mark_analysis_failed(db, job_id, str(exc))
-        raise HTTPException(
-            status_code=400,
-            detail=str(exc)
-        ) from exc
-    
+        run_analysis_job.delay(str(job.id))
     except Exception as exc:
-        logger.exception("estimate endpoint failed")
-        mark_analysis_failed(db, job_id, "Internal Server Error")
+        logger.exception("Failed to enqueue analysis job")
+        mark_analysis_failed(
+            db,
+            job.id,
+            "分析ジョブをキューに登録できませんでした。",
+        )
         raise HTTPException(
-            status_code=500,
-            detail="Internal Server Error"
+            status_code=503,
+            detail="分析ジョブをキューに登録できませんでした。",
         ) from exc
+
+    return {
+        "job_id": job.id,
+        "status": "queued",
+    }
         
 @router.get("/jobs/{job_id}", response_model=AnalysisJobResponse)
 
