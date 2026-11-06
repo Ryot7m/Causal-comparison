@@ -11,5 +11,18 @@ def csv_save(contents: bytes) -> str:
 
     path = UPLOAD_DIR / f"{uuid4().hex}.csv"
     path.write_bytes(contents)
-
     return str(path)
+    return str(path)
+
+def csv_delete(path: str | None) -> None:
+    if not path:
+        return
+
+    upload_root = UPLOAD_DIR.resolve()
+    target = Path(path).resolve()
+
+    # UPLOAD_DIRの外にあるファイルは削除しない
+    if not target.is_relative_to(upload_root):
+        raise ValueError("UPLOAD_DIR外のファイルは削除できません。")
+
+    target.unlink(missing_ok=True)
