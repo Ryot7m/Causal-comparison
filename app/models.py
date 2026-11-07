@@ -12,7 +12,6 @@ from app.database import Base
 
 class AnalysisJob(Base):
     __tablename__ = "analysis_jobs"
-    default = "running"
 
     id: Mapped[UUID] = mapped_column(
         PG_UUID(as_uuid=True),
@@ -52,6 +51,11 @@ class AnalysisJob(Base):
     )
     
     input_path: Mapped[str | None] = mapped_column(
-    Text,
-    nullable=True
+        Text,
+        nullable=True
+    )
+    
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
     )
