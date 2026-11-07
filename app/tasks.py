@@ -1,6 +1,7 @@
 import logging
 from pathlib import Path
 from uuid import UUID
+from datetime import datetime, timezone
 
 import pandas as pd
 
@@ -40,6 +41,7 @@ def run_analysis_job(job_id: str) -> None:
             raise FileNotFoundError(f"CSVファイルが見つかりません: {csv_path}")
 
         job.status = "running"
+        job.started_at = datetime.now(timezone.utc)
         job.error_message = None
         db.commit()
 
