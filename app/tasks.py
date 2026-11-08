@@ -78,21 +78,15 @@ def run_analysis_job(job_id: str) -> None:
 
         db.close()
         
-    @celery_app.task(
-    name="app.tasks.recover_stale_analysis_jobs",
-    ignore_result=True,
-    )
-    def recover_stale_analysis_jobs_task(
-        stale_after_minutes: int = 60,
-    ) -> None:
-        stale_before = datetime.now(timezone.utc) - timedelta(
-            minutes=stale_after_minutes
+@celery_app.task(name="app.tasks.recover_stale_analysis_jobs",ignore_result=True)
+
+def recover_stale_analysis_jobs_task(stale_after_minutes: int = 60) -> None:
+    stale_before = datetime.now(timezone.utc) - timedelta(minutes=stale_after_minutes)
+
+    with SessionLocal() as db:
+        recovered_count = recover_stale_jobs_in_db(
+            db,
+            stale_before=stale_before,
         )
 
-        with SessionLocal() as db:
-            recovered_count = recover_stale_jobs_in_db(
-                db,
-                stale_before=stale_before,
-            )
-
-        logger.info("回復したstaleジョブ数: %s", recovered_count)
+    logger.info("回復したstaleジョブ数: %s", recovered_count)
