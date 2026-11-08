@@ -57,6 +57,18 @@ services:
       db:
         condition: service_healthy
 
+  beat:
+    build: .
+    command: celery -A app.celery_app:celery_app beat --loglevel=INFO
+    environment:
+      DATABASE_URL: postgresql+psycopg://causal_user:local_dev_password@db:5432/causal_comparison
+      CELERY_BROKER_URL: redis://redis:6379/0
+    depends_on:
+      redis:
+        condition: service_healthy
+      db:
+        condition: service_healthy
+
 volumes:
   postgres_data:
   analysis_uploads:
