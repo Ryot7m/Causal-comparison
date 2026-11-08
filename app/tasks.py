@@ -1,16 +1,15 @@
 import logging
 from pathlib import Path
 from uuid import UUID
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 import pandas as pd
-
 from app.analysis import run_analysis
 from app.celery_app import celery_app
 from app.database import SessionLocal
 from app.dantic import AnalysisRequest
 from app.models import AnalysisJob
-from app.renew import mark_analysis_failed, mark_analysis_succeeded
+from app.renew import mark_analysis_failed, mark_analysis_succeeded, recover_stale_analysis_jobs as recover_stale_jobs_in_db
 from app.storage import csv_delete
 
 logger = logging.getLogger(__name__)
@@ -78,3 +77,22 @@ def run_analysis_job(job_id: str) -> None:
                 )
 
         db.close()
+        
+    @celery_app.task(
+    name="app.tasks.recover_stale_analysis_jobs",
+    ignore_result=True,
+    )
+    def recover_stale_analysis_jobs_task(
+        stale_after_minutes: int = 60,
+    ) -> None:
+        stale_before = datetime.now(timezone.utc) - timedelta(
+            minutes=stale_after_minutes
+        )
+
+        with SessionLocal() as db:
+            recovered_count = recover_stale_jobs_in_db(
+                db,
+                stale_before=stale_before,
+            )
+
+        logger.info("回復したstaleジョブ数: %s", recovered_count)
