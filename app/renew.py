@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from uuid import UUID
 import logging
 
-from sqlalchemy import select
+from sqlalchemy import select, and_, or_
 from sqlalchemy.orm import Session
 from app.models import AnalysisJob
 from app.storage import csv_delete
@@ -73,15 +73,23 @@ def get_analysis_job(db: Session, job_id: UUID) -> AnalysisJob | None:
     return db.get(AnalysisJob, job_id)
 
 def recover_stale_analysis_jobs(db: Session, stale_before: datetime) -> int:
-    """stale_beforeより前に開始したrunningジョブを失敗扱いにする。"""
+    """期限を過ぎたrunning/queuedジョブを失敗扱いにする。"""
     now = datetime.now(timezone.utc)
 
     statement = (
         select(AnalysisJob)
         .where(
-            AnalysisJob.status == "running",
-            AnalysisJob.started_at.is_not(None),
-            AnalysisJob.started_at < stale_before,
+            or_(
+                and_(
+                    AnalysisJob.status == "running",
+                    AnalysisJob.started_at.is_not(None),
+                    AnalysisJob.started_at < stale_before,
+                ),
+                and_(
+                    AnalysisJob.status == "queued",
+                    AnalysisJob.created_at < stale_before,
+                ),
+            )
         )
         .with_for_update(skip_locked=True)
     )
@@ -89,9 +97,18 @@ def recover_stale_analysis_jobs(db: Session, stale_before: datetime) -> int:
 
     files_to_delete = []
     for job in jobs:
+        if job.status == "queued":
+            job.error_message = (
+                "分析ジョブが規定時間内にworkerへ取り込まれませんでした。"
+            )
+        else:
+            job.error_message = (
+                "分析workerが規定時間内に完了しませんでした。"
+            )
+
         job.status = "failed"
-        job.error_message = "分析workerが規定時間内に完了しませんでした。"
         job.finished_at = now
+
         if job.input_path:
             files_to_delete.append((job.id, job.input_path))
 
@@ -101,10 +118,11 @@ def recover_stale_analysis_jobs(db: Session, stale_before: datetime) -> int:
         db.rollback()
         raise
 
-    # DBの失敗状態を保存した後にCSVを削除し、削除できた場合だけパスを空にする
+    # 失敗状態をDBに保存した後でCSVを削除する
     for job_id, path in files_to_delete:
         try:
             csv_delete(path)
+
             job = db.get(AnalysisJob, job_id)
             if job is not None and job.status == "failed":
                 job.input_path = None
