@@ -8,5 +8,6 @@ numpy
 scikit-learn
 matplotlib
 celery[redis]
+sqlalchemy>=2.0,<3.0
 setuptools==83.0.0
 japanize-matplotlib==1.1.3
