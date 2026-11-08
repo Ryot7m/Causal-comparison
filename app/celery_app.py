@@ -13,3 +13,13 @@ celery_app.conf.update(
     accept_content=["json"],
     result_serializer="json"
 )
+
+celery_app.conf.beat_schedule = {
+    "recover-stale-analysis-jobs-every-5-minutes": {
+        "task": "app.tasks.recover_stale_analysis_jobs",
+        "schedule": 300.0,
+        "kwargs": {
+            "stale_after_minutes": 60,
+        },
+    },
+}
