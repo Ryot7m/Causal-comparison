@@ -31,6 +31,8 @@ docker compose up --build
 - Swagger UI: http://localhost:8080/docs
 - Health Check: http://localhost:8080/health
 
+Docker Composeでは、PostgreSQLの起動後に`migrate`サービスがAlembicマイグレーションを適用し、その後API・worker・beatが起動します。`migrate`が`Exited (0)`になるのは、マイグレーションが正常終了した状態です。
+
 ## この分析で確認できること
 
 - 一定の因果識別仮定のもとで推定された施策効果
@@ -50,6 +52,13 @@ docker compose up --build
 ## アーキテクチャ
 
 ```text
+【Docker Compose起動時】
+PostgreSQL ──起動完了──> migrate（alembic upgrade head）
+                              ├──> FastAPI
+                              ├──> Celery worker
+                              └──> Celery Beat
+
+【通常の分析処理】
 Client
   │ POST /api/estimate（CSV + config）
   ▼
@@ -60,9 +69,9 @@ FastAPI（app/api.py）
   └─ Redisにタスクを登録
        │
        ├── 202 Accepted + job_id をClientへ返す
-       ▼
-     Redis
-       ▼
+
+Redis
+  ▼
 Celery worker（app/tasks.py）
   ├─ ジョブを running に更新
   ├─ 共有ストレージからCSVを読み込む
@@ -73,6 +82,17 @@ Client
   │ GET /api/jobs/{job_id}
   ▼
 FastAPI ── DBからジョブ状態・結果を取得して返す
+
+【staleジョブの定期回復】
+Celery Beat
+  │ 5分ごとに回復タスクを登録
+  ▼
+Redis
+  ▼
+Celery worker
+  └─ 登録から60分以上経過したqueuedジョブ、
+     または開始から60分以上経過したrunningジョブをfailedにし、
+     保存済みCSVを削除
 ```
 
 ## ディレクトリ構成
@@ -88,7 +108,7 @@ causal-comparison/
 │   ├── database.py      # PostgreSQL接続・セッション管理
 │   ├── models.py        # SQLAlchemyのDBモデル
 │   ├── renew.py         # 分析ジョブの登録・状態更新・取得
-│   ├── storage.py       # アップロードCSVの保存
+│   ├── storage.py       # アップロードCSVの保存・削除
 │   ├── dantic.py        # リクエスト・レスポンスのPydanticモデル
 │   └── config.py        # アプリケーション設定
 │
@@ -112,6 +132,11 @@ causal-comparison/
 ├── .github/
 │   └── workflows/
 │       └── pytests.yml
+│
+├── migrations/
+│   ├── env.py
+│   └── versions/          # DBスキーマの変更履歴
+├── alembic.ini
 │
 ├── research.py              # 研究用実行スクリプト
 ├── Dockerfile
@@ -162,7 +187,7 @@ multipart/form-data
   "status": "queued"
 }
 ```
-分析処理が終了すると、アップロードされたCSVファイルは共有ストレージから削除されます。ジョブ情報と分析結果（失敗時はエラー情報）はデータベースに保持されます。同じジョブを再実行する場合は、CSVを再アップロードしてください。
+分析タスクの終了時（成功・失敗を問わず）、またはstaleジョブの回復時に、アップロードされたCSVファイルは共有ストレージから削除されます。ジョブ情報と分析結果（失敗時はエラー情報）はデータベースに保持されます。同じジョブを再実行する場合は、CSVを再アップロードしてください。
 
 **パラメータ**
 
@@ -287,6 +312,8 @@ multipart/form-data
 | 500 | 想定外のサーバ内部エラー |
 | 503 | Redisなどに接続できず、分析ジョブをCeleryのキューに登録できない |
 
+受付後にCSVの列不足などで分析に失敗した場合、HTTPエラーではなく、`GET /api/jobs/{job_id}`の`status`が`failed`となり、`error_message`に理由が設定されます。
+
 ## テスト
 
 通常のテストを実行します。
@@ -345,6 +372,12 @@ CSV読み込み・入力検証
 | APIドキュメント | Swagger UI（OpenAPI） |
 | コンテナ | Docker |
 | バージョン管理 | Git / GitHub |
+| データベース | PostgreSQL |
+| ORM・DBアクセス | SQLAlchemy |
+| DBマイグレーション | Alembic |
+| 非同期ジョブ | Celery |
+| メッセージブローカー | Redis |
+| 複数サービス起動 | Docker Compose |
 
 ### 使用技術の役割
 
