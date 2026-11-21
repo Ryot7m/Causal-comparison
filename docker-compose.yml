@@ -10,8 +10,10 @@ services:
       DATABASE_URL: postgresql+psycopg://causal_user:local_dev_password@db:5432/causal_comparison
       UPLOAD_DIR: /data/uploads
       CELERY_BROKER_URL: redis://redis:6379/0
+      MODEL_DIR: /data/models
     volumes:
       - analysis_uploads:/data/uploads
+      - prediction_models:/data/models
     depends_on:
       db:
         condition: service_healthy
@@ -51,8 +53,10 @@ services:
       DATABASE_URL: postgresql+psycopg://causal_user:local_dev_password@db:5432/causal_comparison
       UPLOAD_DIR: /data/uploads
       CELERY_BROKER_URL: redis://redis:6379/0
+      MODEL_DIR: /data/models
     volumes:
       - analysis_uploads:/data/uploads
+      - prediction_models:/data/models
     depends_on:
       redis:
         condition: service_healthy

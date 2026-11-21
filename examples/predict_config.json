@@ -1,0 +1,8 @@
+{
+  "target_column": "recommendation",
+  "feature_columns": ["age", "region", "usage_count"],
+  "categorical_columns": ["region"],
+  "target_levels": ["low", "middle", "high"],
+  "target_scores": [1.0, 2.0, 3.0],
+  "random_state": 123
+}
