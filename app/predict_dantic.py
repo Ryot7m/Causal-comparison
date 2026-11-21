@@ -1,6 +1,7 @@
 # app/prediction_dantic.py
 from math import isfinite
 import pandas as pd
+from uuid import UUID
 
 from dantic import BaseModel, ConfigDict, Field, model_validator
 
@@ -81,5 +82,16 @@ def train_prediction_model(
             raise ValueError("target_levelsにない目的変数の値があります。")
     else:
         y = pd.to_numeric(raw_y, errors="raise")
+        
+class PredictionInferenceRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
 
-    # ここから分割、学習、評価、重要度計算
+    records: list[dict[str, Scalar | None]] = Field(
+        min_length=1,
+        max_length=1000,
+    )
+
+
+class PredictionInferenceResponse(BaseModel):
+    model_id: UUID
+    predictions: list[float]
