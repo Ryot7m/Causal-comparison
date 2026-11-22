@@ -87,3 +87,4 @@ services:
 volumes:
   postgres_data:
   analysis_uploads:
+  prediction_models:

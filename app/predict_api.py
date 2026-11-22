@@ -18,7 +18,7 @@ from predict.prediction import predict_with_model
 def predict_with_saved_model(
     model_id: UUID,
     request: PredictionInferenceRequest,
-    db: Annotated[Session, Depends(get_db)],
+    db: Annotated[Session, Depends(get_db)]
 ):
     job = db.get(PredictionJob, model_id)
     if job is None:
@@ -26,7 +26,7 @@ def predict_with_saved_model(
     if job.status != "succeeded":
         raise HTTPException(
             status_code=409,
-            detail="学習が成功したモデルだけ推論に使用できます。",
+            detail="学習が成功したモデルだけ推論に使用できます。"
         )
 
     artifact = model_path_for(model_id)
@@ -37,7 +37,7 @@ def predict_with_saved_model(
     ):
         raise HTTPException(
             status_code=410,
-            detail="学習済みモデルのファイルが利用できません。",
+            detail="学習済みモデルのファイルが利用できません。"
         )
 
     config = PredictionRequest.model_validate(job.config)
@@ -52,13 +52,13 @@ def predict_with_saved_model(
                     "row": index,
                     "missing_columns": sorted(expected_columns - actual_columns),
                     "extra_columns": sorted(actual_columns - expected_columns),
-                },
+                }
             )
 
     predictions = predict_with_model(
         pd.DataFrame(request.records),
         model_path=str(artifact),
         feature_columns=config.feature_columns,
-        categorical_columns=config.categorical_columns,
+        categorical_columns=config.categorical_columns
     )
     return {"model_id": model_id, "predictions": predictions}
