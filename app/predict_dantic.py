@@ -3,9 +3,7 @@ from math import isfinite
 import pandas as pd
 from uuid import UUID
 
-from dantic import BaseModel, ConfigDict, Field, model_validator
-
-from app.dantic import Scalar
+from app.dantic import Scalar, BaseModel, ConfigDict, Field, model_validator
 
 
 class PredictionRequest(BaseModel):

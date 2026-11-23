@@ -59,3 +59,29 @@ class AnalysisJob(Base):
         DateTime(timezone=True),
         nullable=True
     )
+    
+class PredictionJob(Base):
+    __tablename__ = "prediction_jobs"
+
+    id: Mapped[UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid4)
+    status: Mapped[str] = mapped_column(String(16), nullable=False, default="queued", index=True)
+    config: Mapped[dict] = mapped_column(JSONB, nullable=False)
+    input_filename: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    input_path: Mapped[str | None] = mapped_column(Text, nullable=True)
+    model_path: Mapped[str | None] = mapped_column(Text, nullable=True)
+    result: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
+    error_message: Mapped[str | None] = mapped_column(Text, nullable=True)
+    
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True),
+        nullable=False,
+        server_default=func.now()
+    )
+    started_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
+    finished_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True),
+        nullable=True
+    )
