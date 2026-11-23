@@ -160,11 +160,10 @@ def predict_with_saved_model(
 
     try:
         predictions = predict_with_model(
-            pd.DataFrame(request.records),
-            model_path=str(artifact),
-            feature_columns=config.feature_columns,
-            categorical_columns=config.categorical_columns,
-        )
+        pd.DataFrame(request.records),
+        model_path=str(artifact),
+        feature_columns=config.feature_columns
+    )
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     except Exception as exc:

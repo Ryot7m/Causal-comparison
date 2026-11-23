@@ -72,12 +72,17 @@ def run_prediction_training_job(job_id: str) -> None:
         model_path = model_path_for(job_uuid)
         model_path.parent.mkdir(parents=True, exist_ok=True)
 
+        target_scores = None
+        if config.target_levels is not None:
+            assert config.target_scores is not None
+            target_scores = dict(zip(config.target_levels, config.target_scores))
+    
         result = train_prediction_model(
             data,
             target_column=config.target_column,
             feature_columns=config.feature_columns,
             categorical_columns=config.categorical_columns,
-            target_scores=config.target_scores,
+            target_scores=target_scores,
             random_state=config.random_state,
             model_path=str(model_path),
         )
