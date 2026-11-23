@@ -1,6 +1,7 @@
-# app/prediction_dantic.py
+from datetime import datetime
 from math import isfinite
 import pandas as pd
+from typing import Literal
 from uuid import UUID
 
 from app.dantic import Scalar, BaseModel, ConfigDict, Field, model_validator
@@ -89,7 +90,18 @@ class PredictionInferenceRequest(BaseModel):
         max_length=1000,
     )
 
-
 class PredictionInferenceResponse(BaseModel):
     model_id: UUID
     predictions: list[float]
+    
+class PredictionJobAcceptedResponse(BaseModel):
+    job_id: UUID
+    status: Literal["queued"]
+
+class PredictionJobResponse(BaseModel):
+    job_id: UUID
+    status: Literal["queued", "running", "succeeded", "failed"]
+    input_filename: str | None = None
+    result: dict | None = None
+    error_message: str | None = None
+    created_at: datetime

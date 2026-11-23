@@ -7,11 +7,8 @@ print("sys.path =", sys.path)
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from app.api import router
-
-from app.config import (
-    API_TITLE,
-    API_VERSION
-)
+from app.config import API_TITLE, API_VERSION
+from app.predict_api import router as prediction_router
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -30,6 +27,7 @@ app = FastAPI(
 )
 
 app.include_router(router)
+app.include_router(prediction_router)
 
 @app.get("/health")
 def health():
