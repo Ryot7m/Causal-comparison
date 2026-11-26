@@ -62,25 +62,6 @@ class PredictionRequest(BaseModel):
                 raise ValueError("target_scoresは昇順にしてください。")
 
         return self
-    
-def train_prediction_model(
-    data,
-    *,
-    target_column,
-    feature_columns,
-    categorical_columns,
-    target_mapping=None,
-    random_state=123,
-    model_path,
-):
-    raw_y = data[target_column]
-
-    if target_mapping is not None:
-        y = raw_y.map(target_mapping)
-        if y.isna().any():
-            raise ValueError("target_levelsにない目的変数の値があります。")
-    else:
-        y = pd.to_numeric(raw_y, errors="raise")
         
 class PredictionInferenceRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -105,3 +86,4 @@ class PredictionJobResponse(BaseModel):
     result: dict | None = None
     error_message: str | None = None
     created_at: datetime
+    finished_at: datetime | None = None
