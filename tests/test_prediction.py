@@ -2,6 +2,7 @@ from math import isfinite
 import pandas as pd
 import pytest
 from predict.prediction import train_prediction_model, predict_with_model
+pytestmark = pytest.mark.no_database
 
 def make_prediction_data() -> pd.DataFrame:
     return pd.DataFrame({

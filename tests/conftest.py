@@ -65,6 +65,15 @@ def analysis_data():
     })
     
 @pytest.fixture(scope="session", autouse=True)
-def create_test_tables():
+def create_test_tables(request):
+    selected_tests = request.session.items
+
+    if selected_tests and all(
+        item.get_closest_marker("no_database") is not None
+        for item in selected_tests
+    ):
+        yield
+        return
+
     Base.metadata.create_all(bind=engine)
     yield
