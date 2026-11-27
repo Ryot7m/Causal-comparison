@@ -5,7 +5,7 @@ from celery import Celery
 celery_app = Celery(
     "causal_comparison",
     broker=os.getenv("CELERY_BROKER_URL", "redis://redis:6379/0"),
-    include=["app.tasks"]
+    include=["app.tasks", "app.predict_task"]
 )
 
 celery_app.conf.update(
